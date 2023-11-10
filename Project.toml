@@ -1,0 +1,7 @@
+name = "ComputationAwareKalman"
+uuid = "28881c16-bf71-4ba7-a6ec-419960c0da53"
+authors = ["Marvin Pförtner <marvin.pfoertner@uni-tuebingen.de>"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
