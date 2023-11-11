@@ -3,5 +3,9 @@ uuid = "28881c16-bf71-4ba7-a6ec-419960c0da53"
 authors = ["Marvin Pförtner <marvin.pfoertner@uni-tuebingen.de>"]
 version = "0.1.0"
 
+[deps]
+Kronecker = "2c470bb0-bcc8-11e8-3dad-c9649493f05e"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
 [compat]
 julia = "1"
