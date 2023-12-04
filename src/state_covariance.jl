@@ -1,6 +1,7 @@
 using Kronecker
 
-struct StateCovariance{T<:AbstractFloat, TΣ<:AbstractMatrix{T}, TM<:AbstractMatrix{T}} <: AbstractMatrix{T}
+struct StateCovariance{T<:AbstractFloat,TΣ<:AbstractMatrix{T},TM<:AbstractMatrix{T}} <:
+       AbstractMatrix{T}
     Σ::TΣ
     M::TM
 
@@ -13,7 +14,7 @@ struct StateCovariance{T<:AbstractFloat, TΣ<:AbstractMatrix{T}, TM<:AbstractMat
             error("`size(Σ, 1)` must be equal to `size(M, 1)")
         end
 
-        return new{eltype(Σ), typeof(Σ), typeof(M)}(Σ, M)
+        return new{eltype(Σ),typeof(Σ),typeof(M)}(Σ, M)
     end
 end
 
@@ -24,7 +25,8 @@ end
 
 Base.size(P::StateCovariance) = size(P.Σ)
 Base.IndexStyle(::Type{<:StateCovariance}) = IndexCartesian()
-Base.getindex(P::StateCovariance, I::Vararg{Int, 2}) = P.Σ[I[1], I[2]] - transpose(P.M[I[1], :]) * conj(P.M[I[2], :])
+Base.getindex(P::StateCovariance, I::Vararg{Int,2}) =
+    P.Σ[I[1], I[2]] - transpose(P.M[I[1], :]) * conj(P.M[I[2], :])
 
 const MulMatTypes = [:AbstractMatrix, :Diagonal, :GeneralizedKroneckerProduct]
 

@@ -1,8 +1,4 @@
-struct FilterCache{
-    T<:AbstractFloat,
-    Tm<:AbstractVector{T},
-    TM<:AbstractMatrix{T},
-}
+struct FilterCache{T<:AbstractFloat,Tm<:AbstractVector{T},TM<:AbstractMatrix{T}}
     ts::Vector{T}
 
     m⁻s::Vector{Tm}
@@ -18,10 +14,10 @@ struct FilterCache{
     P⁻HᵀWs::Vector{TM}
 end
 
-function FilterCache{T, Tm, TM}() where {T, Tm, TM}
-    return FilterCache{T, Tm, TM}(T[], Tm[], TM[], Tm[], TM[], Tm[], TM[], TM[], TM[])
+function FilterCache{T,Tm,TM}() where {T,Tm,TM}
+    return FilterCache{T,Tm,TM}(T[], Tm[], TM[], Tm[], TM[], Tm[], TM[], TM[], TM[])
 end
 
 function FilterCache{T}() where {T}
-    return FilterCache{T, Vector{T}, Matrix{T}}()
+    return FilterCache{T,Vector{T},Matrix{T}}()
 end

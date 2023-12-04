@@ -1,5 +1,3 @@
 using Documenter
 
-makedocs(
-    sitename="ComputationAwareKalman.jl",
-)
+makedocs(sitename = "ComputationAwareKalman.jl")
