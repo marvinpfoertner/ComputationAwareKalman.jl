@@ -1,23 +1,50 @@
-struct FilterCache{T<:AbstractFloat,Tm<:AbstractVector{T},TM<:AbstractMatrix{T}}
-    ts::Vector{T}
+struct UpdatedBelief{
+    T<:AbstractFloat,
+    Tm<:AbstractVector{T},
+    TΣ<:AbstractMatrix{T},
+    TM<:AbstractMatrix{T},
+    TU<:AbstractMatrix{T},
+    Tw<:AbstractVector{T},
+    TW<:AbstractMatrix{T},
+}
+    m::Tm
 
-    m⁻s::Vector{Tm}
-    M⁻s::Vector{TM}
+    Σ::TΣ
+    M::TM
 
-    ms::Vector{Tm}
-    Ms::Vector{TM}
+    i::Int64
 
-    Hᵀws::Vector{Tm}
+    U::TU
 
-    Ws::Vector{TM}
-    HᵀWs::Vector{TM}
-    P⁻HᵀWs::Vector{TM}
+    w::Tw
+    W::TW
 end
 
-function FilterCache{T,Tm,TM}() where {T,Tm,TM}
-    return FilterCache{T,Tm,TM}(T[], Tm[], TM[], Tm[], TM[], Tm[], TM[], TM[], TM[])
+struct FilterCache{
+    T<:AbstractFloat,
+    Tm<:AbstractVector{T},
+    TM<:AbstractMatrix{T},
+    Tlgssm<:AbstractDiscreteLGSSM,
+}
+    lgssm::Tlgssm
+
+    ms::Vector{Tm}  # Mean of updated filter belief
+    Ms::Vector{TM}  # Downdate to covariance of updated filter belief
+
+    is::Vector{Int64}  # Number of PLS iterations
+
+    M⁺s::Vector{TM}  # Truncated downdate to covariance of update filter belief
+
+    Us::Vector{TM}
+
+    ws::Vector{Tm}  # Hₖᵀuₖ
+    Ws::Vector{TM}  # HₖᵀUₖ
 end
 
-function FilterCache{T}() where {T}
-    return FilterCache{T,Vector{T},Matrix{T}}()
+function FilterCache{T,Tm,TM}(lgssm::Tlgssm) where {T,Tm,TM,Tlgssm}
+    return FilterCache{T,Tm,TM,Tlgssm}(lgssm, Tm[], TM[], Int64[], TM[], TM[], Tm[], TM[])
+end
+
+function FilterCache{T}(lgssm::Tlgssm) where {T,Tlgssm}
+    return FilterCache{T,Vector{T},Matrix{T}}(lgssm)
 end

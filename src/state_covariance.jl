@@ -1,5 +1,25 @@
 using Kronecker
 
+struct ConditionalGaussianBelief{
+    T<:AbstractFloat,
+    Tm<:AbstractVector{T},
+    TΣ<:AbstractMatrix{T},
+    TM<:AbstractMatrix{T},
+}
+    m::Tm
+
+    Σ::TΣ
+    M::TM
+end
+
+function Statistics.mean(d::ConditionalGaussianBelief)
+    return d.m
+end
+
+function Statistics.cov(d::ConditionalGaussianBelief)
+    return StateCovariance(d.Σ, d.M)
+end
+
 struct StateCovariance{T<:AbstractFloat,TΣ<:AbstractMatrix{T},TM<:AbstractMatrix{T}} <:
        AbstractMatrix{T}
     Σ::TΣ
