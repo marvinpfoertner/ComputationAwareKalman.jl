@@ -1,3 +1,11 @@
+function predict(
+    m::Tm,
+    M::TM,
+    A::TA,
+) where {T<:AbstractFloat,Tm<:AbstractVector{T},TM<:AbstractMatrix{T},TA<:AbstractMatrix{T}}
+    return A * m, A * M
+end
+
 struct UpdateCache{
     T<:AbstractFloat,
     Tm<:AbstractVector{T},
