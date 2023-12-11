@@ -1,62 +1,65 @@
-abstract type AbstractDiscreteLGSSM end
-abstract type AbstractDiscretizedContinuousLGSSM <: AbstractDiscreteLGSSM end
+abstract type AbstractGaussMarkovChain end
+abstract type AbstractDiscretizedGaussMarkovProcess <: AbstractGaussMarkovChain end
 
-function indices(lgssm::Tlgssm) where {Tlgssm<:AbstractDiscreteLGSSM} end
-
-function prior_mean(
-    lgssm::Tlgssm,
-    index::Tindex,
-) where {Tlgssm<:AbstractDiscreteLGSSM,Tindex<:Integer} end
-
-function prior_cov(
-    lgssm::Tlgssm,
-    index::Tindex,
-) where {Tlgssm<:AbstractDiscreteLGSSM,Tindex<:Integer} end
-
-function transition(
-    lgssm::Tlgssm,
-    index::Tindex,
-) where {Tlgssm<:AbstractDiscreteLGSSM,Tindex<:Integer} end
-
-function ts(lgssm::Tlgssm) where {Tlgssm<:AbstractDiscretizedContinuousLGSSM} end
+# AbstractGaussMarkovChain interface
+function indices(gmc::Tgmc) where {Tgmc<:AbstractGaussMarkovChain} end
 
 function prior_mean(
-    lgssm::Tlgssm,
-    t::Tt,
-) where {Tlgssm<:AbstractDiscretizedContinuousLGSSM,Tt<:AbstractFloat} end
+    gmc::Tgmc,
+    index::Tindex,
+) where {Tgmc<:AbstractGaussMarkovChain,Tindex<:Integer} end
 
 function prior_cov(
-    lgssm::Tlgssm,
-    t::Tt,
-) where {Tlgssm<:AbstractDiscretizedContinuousLGSSM,Tt<:AbstractFloat} end
+    gmc::Tgmc,
+    index::Tindex,
+) where {Tgmc<:AbstractGaussMarkovChain,Tindex<:Integer} end
 
 function transition(
-    lgssm::Tlgssm,
+    gmc::Tgmc,
+    index::Tindex,
+) where {Tgmc<:AbstractGaussMarkovChain,Tindex<:Integer} end
+
+# AbstractDiscretizedGaussMarkovProcess interface
+function ts(gmp::Tgmp) where {Tgmp<:AbstractDiscretizedGaussMarkovProcess} end
+
+function prior_mean(
+    dgmp::Tdgmp,
+    t::Tt,
+) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tt<:AbstractFloat} end
+
+function prior_cov(
+    dgmp::Tdgmp,
+    t::Tt,
+) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tt<:AbstractFloat} end
+
+function transition(
+    dgmp::Tdgmp,
     t::Tt,
     t₀::Tt,
-) where {Tlgssm<:AbstractDiscreteLGSSM,Tt<:AbstractFloat} end
+) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tt<:AbstractFloat} end
 
-function indices(lgssm::Tlgssm) where {Tlgssm<:AbstractDiscretizedContinuousLGSSM}
-    return firstindex(ts(lgssm)):lastindex(ts(lgssm))
+# AbstractDiscretizedGaussMarkovProcess implementation of AbstractGaussMarkovChain interface
+function indices(dgmp::Tdgmp) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess}
+    return firstindex(ts(dgmp)):lastindex(ts(dgmp))
 end
 
 function prior_cov(
-    lgssm::Tlgssm,
+    dgmp::Tdgmp,
     index::Tindex,
-) where {Tlgssm<:AbstractDiscretizedContinuousLGSSM,Tindex<:Integer}
-    return prior_cov(lgssm, ts(lgssm)[index])
+) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tindex<:Integer}
+    return prior_cov(dgmp, ts(dgmp)[index])
 end
 
 function prior_mean(
-    lgssm::Tlgssm,
+    dgmp::Tdgmp,
     index::Tindex,
-) where {Tlgssm<:AbstractDiscretizedContinuousLGSSM,Tindex<:Integer}
-    return prior_mean(lgssm, ts(lgssm)[index])
+) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tindex<:Integer}
+    return prior_mean(dgmp, ts(dgmp)[index])
 end
 
 function transition(
-    lgssm::Tlgssm,
+    dgmp::Tdgmp,
     index::Tindex,
-) where {Tlgssm<:AbstractDiscretizedContinuousLGSSM,Tindex<:Integer}
-    return transition(lgssm, ts(lgssm)[index+1], ts(lgssm)[index])
+) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tindex<:Integer}
+    return transition(dgmp, ts(dgmp)[index+1], ts(dgmp)[index])
 end
