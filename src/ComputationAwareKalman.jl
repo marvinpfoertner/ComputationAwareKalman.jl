@@ -13,7 +13,7 @@ include("smoother.jl")
 export AbstractDiscreteLGSSM, AbstractDiscretizedContinuousLGSSM
 
 export StateCovariance, ConditionalGaussianBelief
-export UpdatedBelief, FilterCache
+export update, FilterCache
 export SmootherCache
 
 end

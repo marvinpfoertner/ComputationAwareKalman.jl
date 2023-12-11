@@ -1,15 +1,12 @@
-struct UpdatedBelief{
+struct UpdateCache{
     T<:AbstractFloat,
     Tm<:AbstractVector{T},
-    TΣ<:AbstractMatrix{T},
     TM<:AbstractMatrix{T},
     TU<:AbstractMatrix{T},
     Tw<:AbstractVector{T},
     TW<:AbstractMatrix{T},
 }
     m::Tm
-
-    Σ::TΣ
     M::TM
 
     i::Int64
@@ -18,6 +15,72 @@ struct UpdatedBelief{
 
     w::Tw
     W::TW
+end
+
+function update(
+    m⁻::Tm⁻,
+    Σ::TΣ,
+    M⁻::TM⁻,
+    H::TH,
+    Λ::TΛ,
+    y::Ty,
+    abstol::T = 1e-6,
+    reltol::T = 1e-8,
+) where {
+    T<:AbstractFloat,
+    Tm⁻<:AbstractVector{T},
+    TΣ<:AbstractMatrix{T},
+    TM⁻<:AbstractMatrix{T},
+    TH<:AbstractMatrix{T},
+    TΛ<:AbstractMatrix{T},
+    Ty<:AbstractVector{T},
+}
+    P⁻ = StateCovariance(Σ, M⁻)
+
+    S = H * (P⁻ * H') + Λ
+
+    i = 0
+
+    u = zeros(size(H, 1))
+    U = zeros(size(H, 1), 0)
+
+    r₀ = y - H * m⁻
+    r = r₀
+
+    tol = max(abstol, reltol * norm(y, 2))
+
+    while i < size(u, 1) && norm(r, 2) > tol
+        v = r
+
+        α = v' * r
+        d = v - U * (U' * (S * v))
+        η = v' * S * d
+
+        u = u + (α / η) * d
+        U = [U;; sqrt(1 / η) * d]
+
+        i = i + 1
+
+        r = r₀ - S * u
+    end
+
+    w = H' * u
+    W = H' * U
+
+    P⁻w = P⁻ * w
+    P⁻W = P⁻ * W
+
+    m = m⁻ + P⁻w
+    M = [M⁻;; P⁻W]
+
+    return UpdateCache{T,typeof(m),typeof(M),typeof(U),typeof(w),typeof(W)}(
+        m,
+        M,
+        i,
+        U,
+        w,
+        W,
+    )
 end
 
 struct FilterCache{
@@ -68,9 +131,9 @@ end
 
 function Base.push!(
     fcache::FilterCache{T,Tlgssm,Tm,TM,TM⁺,TU,Tw,TW},
-    x::UpdatedBelief{T,Tm,TΣ,TM,TU,Tw,TW},
+    x::UpdateCache{T,Tm,TM,TU,Tw,TW},
     M⁺::TM⁺,
-) where {T,Tlgssm,Tm,TM,TM⁺,TU,Tw,TW,TΣ}
+) where {T,Tlgssm,Tm,TM,TM⁺,TU,Tw,TW}
     push!(fcache.ms, x.m)
     push!(fcache.Ms, x.M)
     push!(fcache.is, x.i)
