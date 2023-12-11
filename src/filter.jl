@@ -85,7 +85,6 @@ end
 
 struct FilterCache{
     T<:AbstractFloat,
-    Tlgssm<:AbstractDiscreteLGSSM,
     Tm<:AbstractVector{T},
     TM<:AbstractMatrix{T},
     TM⁺<:AbstractMatrix{T},
@@ -93,8 +92,6 @@ struct FilterCache{
     Tw<:AbstractVector{T},
     TW<:AbstractMatrix{T},
 }
-    lgssm::Tlgssm
-
     ms::Vector{Tm}  # Mean of updated filter belief
     Ms::Vector{TM}  # Downdate to covariance of updated filter belief
 
@@ -108,32 +105,23 @@ struct FilterCache{
     Ws::Vector{TW}  # HₖᵀUₖ
 end
 
-function FilterCache{T,Tlgssm,Tm,TM,TM⁺,TU,Tw,TW}(
-    lgssm::Tlgssm,
-) where {T,Tlgssm,Tm,TM,TM⁺,TU,Tw,TW}
-    return FilterCache{T,Tlgssm,Tm,TM,TM⁺,TU,Tw,TW}(
-        lgssm,
-        Tm[],
-        TM[],
-        Int64[],
-        TM⁺[],
-        TU[],
-        Tw[],
-        TW[],
-    )
+function FilterCache{T,Tm,TM,TM⁺,TU,Tw,TW}() where {T,Tm,TM,TM⁺,TU,Tw,TW}
+    return FilterCache{T,Tm,TM,TM⁺,TU,Tw,TW}(Tm[], TM[], Int64[], TM⁺[], TU[], Tw[], TW[])
 end
 
-function FilterCache{T}(lgssm::Tlgssm) where {T,Tlgssm}
-    return FilterCache{T,Tlgssm,Vector{T},Matrix{T},Matrix{T},Matrix{T},Vector{T},Matrix{T}}(
-        lgssm,
-    )
+function FilterCache{T}() where {T}
+    return FilterCache{T,Vector{T},Matrix{T},Matrix{T},Matrix{T},Vector{T},Matrix{T}}()
+end
+
+function FilterCache()
+    return FilterCache{Float64}()
 end
 
 function Base.push!(
-    fcache::FilterCache{T,Tlgssm,Tm,TM,TM⁺,TU,Tw,TW},
+    fcache::FilterCache{T,Tm,TM,TM⁺,TU,Tw,TW},
     x::UpdateCache{T,Tm,TM,TU,Tw,TW},
     M⁺::TM⁺,
-) where {T,Tlgssm,Tm,TM,TM⁺,TU,Tw,TW}
+) where {T,Tm,TM,TM⁺,TU,Tw,TW}
     push!(fcache.ms, x.m)
     push!(fcache.Ms, x.M)
     push!(fcache.is, x.i)
