@@ -10,4 +10,6 @@ include("state_covariance.jl")
 include("filter.jl")
 include("smoother.jl")
 
+include("interpolate.jl")
+
 end
