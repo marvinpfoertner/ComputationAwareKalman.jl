@@ -147,6 +147,13 @@ function P(
     return StateCovariance(prior_cov(gmc, k), fcache.Ms[k])
 end
 
+function M⁻(fcache::Tfcache, k) where {Tfcache<:FilterCache}
+    Mₖ = fcache.Ms[k]
+    iₖ = fcache.is[k]
+
+    return Mₖ[:, 1:(size(Mₖ, 2)-iₖ)]
+end
+
 function P⁻W(fcache::Tfcache, k) where {Tfcache<:FilterCache}
     Mₖ = fcache.Ms[k]
     iₖ = fcache.is[k]
