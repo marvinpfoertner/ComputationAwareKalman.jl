@@ -139,6 +139,21 @@ function FilterCache()
     return FilterCache{Float64}()
 end
 
+function P(
+    gmc::Tgmc,
+    fcache::Tfcache,
+    k,
+) where {Tgmc<:AbstractGaussMarkovChain,Tfcache<:FilterCache}
+    return StateCovariance(prior_cov(gmc, k), fcache.Ms[k])
+end
+
+function P⁻W(fcache::Tfcache, k) where {Tfcache<:FilterCache}
+    Mₖ = fcache.Ms[k]
+    iₖ = fcache.is[k]
+
+    return Mₖ[:, (size(Mₖ, 2)-iₖ+1):end]
+end
+
 function Base.push!(
     fcache::FilterCache{T,Tm,TM,TM⁺,TU,Tw,TW},
     x::UpdateCache{T,Tm,TM,TU,Tw,TW},
