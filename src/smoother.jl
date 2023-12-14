@@ -43,7 +43,7 @@ function smooth(
     wˢs = [fcache.ws[end]]
     Wˢs = [fcache.Ws[end]]
 
-    for k in reverse(indices(gmc))[2:end]
+    for k in reverse(1:length(gmc)-1)
         Aₖ = transition(gmc, k)
         Aₖᵀwˢₖ₊₁ = Aₖ' * wˢs[end]
         AₖᵀWˢₖ₊₁ = Aₖ' * Wˢs[end]

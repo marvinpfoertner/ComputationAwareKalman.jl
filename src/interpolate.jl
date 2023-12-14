@@ -9,17 +9,19 @@ function interpolate(
 }
     k = searchsortedlast(ts(dgmp), t)
 
-    if k < firstindex(ts(dgmp))
-        m = prior_mean(dgmp, t)
-        M = zeros(T, size(m, 1), 0)
+    if k < 1
+        mₜ = prior_mean(dgmp, t)
+        Mₜ = zeros(T, size(mₜ, 1), 0)
     else
-        A = transition(dgmp, t, ts(dgmp)[k])
+        Aₜₖ = transition(dgmp, t, ts(dgmp)[k])
 
-        m = A * fcache.ms[k]
-        M = A * fcache.Ms[k]
+        mₜ = Aₜₖ * fcache.ms[k]
+        Mₜ = Aₜₖ * fcache.Ms[k]
     end
 
-    return ConditionalGaussianBelief(m, prior_cov(dgmp, t), M)
+    Σₜ = prior_cov(dgmp, t)
+
+    return ConditionalGaussianBelief(mₜ, Σₜ, Mₜ)
 end
 
 function interpolate(
@@ -34,27 +36,27 @@ function interpolate(
 }
     k = searchsortedlast(ts(dgmp), t)
 
-    if k < firstindex(ts(dgmp))
+    if k < 1
         mₜ = prior_mean(dgmp, t)
         Mₜ = zeros(T, size(m, 1), 0)
     else
-        Aₖₜ = transition(dgmp, t, ts(dgmp)[k])
+        Aₜₖ = transition(dgmp, t, ts(dgmp)[k])
 
-        mₜ = Aₖₜ * scache.ms[k]
-        Mₜ = Aₖₜ * M(scache, k)
+        mₜ = Aₜₖ * scache.ms[k]
+        Mₜ = Aₜₖ * M(scache, k)
     end
 
     Σₜ = prior_cov(dgmp, t)
 
-    if k >= lastindex(ts(dgmp))
+    if k >= length(dgmp)
         mˢₜ = mₜ
         Mˢₜ = Mₜ
     else
         Pₜ = StateCovariance(Σₜ, Mₜ)
-        Aₜₖ₊₁ = transition(dgmp, ts(dgmp)[k+1], t)
+        A₍ₖ₊₁₎ₜ = transition(dgmp, ts(dgmp)[k+1], t)
 
-        mˢₜ = mₜ + Pₜ * (Aₜₖ₊₁' * scache.wˢs[k+1])
-        Mˢₜ = [Mₜ;; Pₜ * (Aₜₖ₊₁' * scache.Wˢs[k+1])]
+        mˢₜ = mₜ + Pₜ * (A₍ₖ₊₁₎ₜ' * scache.wˢs[k+1])
+        Mˢₜ = [Mₜ;; Pₜ * (A₍ₖ₊₁₎ₜ' * scache.Wˢs[k+1])]
     end
 
     return ConditionalGaussianBelief(mˢₜ, Σₜ, Mˢₜ)
