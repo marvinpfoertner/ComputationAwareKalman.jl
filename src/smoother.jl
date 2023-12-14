@@ -10,28 +10,22 @@ function smooth(
     Wˢs = [fcache.Ws[end]]
 
     for k in reverse(indices(gmc))[2:end]
-        wˢₖ₊₁ = wˢs[end]
-        Wˢₖ₊₁ = Wˢs[end]
+        Aₖ = transition(gmc, k)
+        Aₖᵀwˢₖ₊₁ = Aₖ' * wˢs[end]
+        AₖᵀWˢₖ₊₁ = Aₖ' * Wˢs[end]
 
         Pₖ = P(gmc, fcache, k)
-
-        mˢₖ = fcache.ms[k] + Pₖ * wˢₖ₊₁
-        Mˢₖ = [fcache.Ms[k];; Pₖ * Wˢₖ₊₁]
+        mˢₖ = fcache.ms[k] + Pₖ * Aₖᵀwˢₖ₊₁
+        Mˢₖ = [fcache.Ms[k];; Pₖ * AₖᵀWˢₖ₊₁]
 
         push!(mˢs, mˢₖ)
         push!(Mˢs, Mˢₖ)
 
-        Aₖ = transition(gmc, k)
+        wₖ = fcache.ws[k]
+        Wₖ = fcache.Ws[k]
         P⁻Wₖ = P⁻W(fcache, k)
-
-        Aₖᵀwˢₖ₊₁ = Aₖ' * wˢₖ₊₁
-        AₖᵀWˢₖ₊₁ = Aₖ' * Wˢₖ₊₁
-
-        wˢₖ = fcache.ws[k] + Aₖᵀwˢₖ₊₁ - fcache.Ws[k] * (P⁻Wₖ' * Aₖᵀwˢₖ₊₁)
-        Wˢₖ = [
-            fcache.Ws[k];;
-            AₖᵀWˢₖ₊₁ - fcache.Ws[k] * (P⁻Wₖ' * AₖᵀWˢₖ₊₁)
-        ]
+        wˢₖ = wₖ + Aₖᵀwˢₖ₊₁ - Wₖ * (P⁻Wₖ' * Aₖᵀwˢₖ₊₁)
+        Wˢₖ = [Wₖ;; AₖᵀWˢₖ₊₁ - Wₖ * (P⁻Wₖ' * AₖᵀWˢₖ₊₁)]
 
         Wˢₖ = truncate(Wˢₖ, svd_cutoff)
 
