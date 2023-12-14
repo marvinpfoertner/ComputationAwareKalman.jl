@@ -24,32 +24,38 @@ end
 
 function interpolate(
     dgmp::Tdgmp,
-    fcache::Tfcache,
     scache::Tscache,
     t::Tt,
 ) where {
     Tdgmp<:AbstractDiscretizedGaussMarkovProcess,
     T<:AbstractFloat,
-    Tfcache<:FilterCache{T},
     Tscache<:SmootherCache{T},
     Tt<:AbstractFloat,
 }
     k = searchsortedlast(ts(dgmp), t)
 
-    xᶠ = interpolate(dgmp, fcache, t)
-    m = Statistics.mean(xᶠ)
-    M = xᶠ.M
-    P = Statistics.cov(xᶠ)
-
-    if k >= lastindex(ts(dgmp))
-        mˢ = m
-        Mˢ = M
+    if k < firstindex(ts(dgmp))
+        mₜ = prior_mean(dgmp, t)
+        Mₜ = zeros(T, size(m, 1), 0)
     else
-        A = transition(dgmp, ts(dgmp)[k+1], t)
+        Aₖₜ = transition(dgmp, t, ts(dgmp)[k])
 
-        mˢ = m + P * (A' * scache.wˢs[k+1])
-        Mˢ = [M;; P * (A' * scache.Wˢs[k+1])]
+        mₜ = Aₖₜ * scache.ms[k]
+        Mₜ = Aₖₜ * M(scache, k)
     end
 
-    return ConditionalGaussianBelief(mˢ, prior_cov(dgmp, t), Mˢ)
+    Σₜ = prior_cov(dgmp, t)
+
+    if k >= lastindex(ts(dgmp))
+        mˢₜ = mₜ
+        Mˢₜ = Mₜ
+    else
+        Pₜ = StateCovariance(Σₜ, Mₜ)
+        Aₜₖ₊₁ = transition(dgmp, ts(dgmp)[k+1], t)
+
+        mˢₜ = mₜ + Pₜ * (Aₜₖ₊₁' * scache.wˢs[k+1])
+        Mˢₜ = [Mₜ;; Pₜ * (Aₜₖ₊₁' * scache.Wˢs[k+1])]
+    end
+
+    return ConditionalGaussianBelief(mˢₜ, Σₜ, Mˢₜ)
 end

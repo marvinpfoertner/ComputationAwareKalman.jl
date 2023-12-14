@@ -10,15 +10,26 @@ struct SmootherCache{
     mˢs::Vector{Tmˢ}
     Mˢs::Vector{TMˢ}
 
-    wˢs::Vector{Tm}
-    Wˢs::Vector{TM}
+    wˢs::Vector{Twˢ}
+    Wˢs::Vector{TWˢ}
 
     # Quantities from the filter
     ms::Vector{Tm}  # Mean of updated filter belief
 
-    is::Vector{Int64}  # Number of PLS iterations
-
     M⁺s::Vector{TM⁺}  # Truncated downdate to covariance of updated filter belief
+end
+
+function M(scache::Tscache, k) where {Tscache<:SmootherCache}
+    Mˢₖ = scache.Mˢs[k]
+
+    if k == length(scache.Mˢs)
+        Mₖ = Mˢₖ
+    else
+        Wˢₖ₊₁ = scache.Wˢs[k+1]
+        Mₖ = Mˢₖ[:, 1:(size(Mˢₖ, 2)-size(Wˢₖ₊₁, 2))]
+    end
+
+    return Mₖ
 end
 
 function smooth(
@@ -62,7 +73,6 @@ function smooth(
         reverse!(wˢs),
         reverse!(Wˢs),
         fcache.ms,
-        fcache.is,
         fcache.M⁺s,
     )
 end
