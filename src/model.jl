@@ -37,23 +37,27 @@ function Base.length(dgmp::Tdgmp) where {Tdgmp<:AbstractDiscretizedGaussMarkovPr
     return length(ts(dgmp))
 end
 
-function prior_cov(
-    dgmp::Tdgmp,
-    k::Tk,
-) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tk<:Integer}
-    return prior_cov(dgmp, ts(dgmp)[k])
-end
-
 function prior_mean(
     dgmp::Tdgmp,
     k::Tk,
 ) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tk<:Integer}
-    return prior_mean(dgmp, ts(dgmp)[k])
+    return prior_mean(dgmp, ts(dgmp)[max(k, 1)])
+end
+
+function prior_cov(
+    dgmp::Tdgmp,
+    k::Tk,
+) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tk<:Integer}
+    return prior_cov(dgmp, ts(dgmp)[max(k, 1)])
 end
 
 function transition(
     dgmp::Tdgmp,
     k::Tk,
 ) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tk<:Integer}
+    if k == 0
+        return I  # TODO: Add dimensionality
+    end
+
     return transition(dgmp, ts(dgmp)[k+1], ts(dgmp)[k])
 end

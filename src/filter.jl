@@ -1,9 +1,19 @@
 function predict(
-    m::Tm,
-    M::TM,
-    A::TA,
-) where {T<:AbstractFloat,Tm<:AbstractVector{T},TM<:AbstractMatrix{T},TA<:AbstractMatrix{T}}
-    return A * m, A * M
+    gmc::Tgmc,
+    k::Tk,
+    mₖ₋₁::Tmₖ₋₁,
+    Mₖ₋₁::TMₖ₋₁,
+) where {
+    Tgmc<:AbstractGaussMarkovChain,
+    Tk<:Integer,
+    T<:AbstractFloat,
+    Tmₖ₋₁<:AbstractVector{T},
+    TMₖ₋₁<:AbstractMatrix{T},
+}
+    Aₖ₋₁ = transition(gmc, k - 1)
+    m⁻ₖ = Aₖ₋₁ * mₖ₋₁
+    M⁻ₖ = Aₖ₋₁ * Mₖ₋₁
+    return m⁻ₖ, M⁻ₖ
 end
 
 struct UpdateCache{
