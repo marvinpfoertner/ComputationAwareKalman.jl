@@ -12,11 +12,14 @@ function interpolate(
     if k < 1
         mₜ = prior_mean(dgmp, t)
         Mₜ = zeros(T, size(mₜ, 1), 0)
+    elseif t == ts(dgmp)[k]
+        mₜ = fcache.ms[k]
+        Mₜ = fcache.Ms[k]
     else
         Aₜₖ = transition(dgmp, t, ts(dgmp)[k])
 
         mₜ = Aₜₖ * fcache.ms[k]
-        Mₜ = Aₜₖ * fcache.Ms[k]
+        Mₜ = Aₜₖ * fcache.M⁺s[k]
     end
 
     Σₜ = prior_cov(dgmp, t)
@@ -39,11 +42,14 @@ function interpolate(
     if k < 1
         mₜ = prior_mean(dgmp, t)
         Mₜ = zeros(T, size(m, 1), 0)
+    elseif t == ts(dgmp)[k]
+        mₜ = scache.ms[k]
+        Mₜ = M(scache, k)
     else
         Aₜₖ = transition(dgmp, t, ts(dgmp)[k])
 
         mₜ = Aₜₖ * scache.ms[k]
-        Mₜ = Aₜₖ * M(scache, k)
+        Mₜ = Aₜₖ * scache.M⁺s[k]
     end
 
     Σₜ = prior_cov(dgmp, t)
