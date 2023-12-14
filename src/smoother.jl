@@ -1,3 +1,26 @@
+struct SmootherCache{
+    T<:AbstractFloat,
+    Tmˢ<:AbstractVector{T},
+    TMˢ<:AbstractMatrix{T},
+    Twˢ<:AbstractVector{T},
+    TWˢ<:AbstractMatrix{T},
+    Tm<:AbstractVector{T},
+    TM⁺<:AbstractMatrix{T},
+}
+    mˢs::Vector{Tmˢ}
+    Mˢs::Vector{TMˢ}
+
+    wˢs::Vector{Tm}
+    Wˢs::Vector{TM}
+
+    # Quantities from the filter
+    ms::Vector{Tm}  # Mean of updated filter belief
+
+    is::Vector{Int64}  # Number of PLS iterations
+
+    M⁺s::Vector{TM⁺}  # Truncated downdate to covariance of updated filter belief
+end
+
 function smooth(
     gmc::Tgmc,
     fcache::Tfcache,
@@ -33,13 +56,13 @@ function smooth(
         push!(Wˢs, Wˢₖ)
     end
 
-    return SmootherCache(reverse!(mˢs), reverse!(Mˢs), reverse!(wˢs), reverse!(Wˢs))
-end
-
-struct SmootherCache{T<:AbstractFloat,Tm<:AbstractVector{T},TM<:AbstractMatrix{T}}
-    mˢs::Vector{Tm}
-    Mˢs::Vector{TM}
-
-    wˢs::Vector{Tm}
-    Wˢs::Vector{TM}
+    return SmootherCache(
+        reverse!(mˢs),
+        reverse!(Mˢs),
+        reverse!(wˢs),
+        reverse!(Wˢs),
+        fcache.ms,
+        fcache.is,
+        fcache.M⁺s,
+    )
 end
