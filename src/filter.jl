@@ -27,8 +27,6 @@ struct UpdateCache{
     m::Tm
     M::TM
 
-    i::Int64
-
     U::TU
 
     w::Tw
@@ -91,14 +89,7 @@ function update(
     m = m⁻ + P⁻w
     M = [M⁻;; P⁻W]
 
-    return UpdateCache{T,typeof(m),typeof(M),typeof(U),typeof(w),typeof(W)}(
-        m,
-        M,
-        i,
-        U,
-        w,
-        W,
-    )
+    return UpdateCache{T,typeof(m),typeof(M),typeof(U),typeof(w),typeof(W)}(m, M, U, w, W)
 end
 
 function truncate(
@@ -127,8 +118,6 @@ struct FilterCache{
     ms::Vector{Tm}  # Mean of updated filter belief
     Ms::Vector{TM}  # Downdate to covariance of updated filter belief
 
-    is::Vector{Int64}  # Number of PLS iterations
-
     M⁺s::Vector{TM⁺}  # Truncated downdate to covariance of update filter belief
 
     Us::Vector{TU}
@@ -138,7 +127,7 @@ struct FilterCache{
 end
 
 function FilterCache{T,Tm,TM,TM⁺,TU,Tw,TW}() where {T,Tm,TM,TM⁺,TU,Tw,TW}
-    return FilterCache{T,Tm,TM,TM⁺,TU,Tw,TW}(Tm[], TM[], Int64[], TM⁺[], TU[], Tw[], TW[])
+    return FilterCache{T,Tm,TM,TM⁺,TU,Tw,TW}(Tm[], TM[], TM⁺[], TU[], Tw[], TW[])
 end
 
 function FilterCache{T}() where {T}
@@ -159,16 +148,28 @@ end
 
 function M⁻(fcache::Tfcache, k) where {Tfcache<:FilterCache}
     Mₖ = fcache.Ms[k]
-    iₖ = fcache.is[k]
 
-    return Mₖ[:, 1:(size(Mₖ, 2)-iₖ)]
+    if k > 1
+        M⁺ₖ₋₁ = fcache.M⁺s[k-1]
+        M⁻ₖ = Mₖ[:, 1:size(M⁺ₖ₋₁, 2)]
+    else
+        M⁻ₖ = Mₖ[:, 1:0]
+    end
+
+    return M⁻ₖ
 end
 
 function P⁻W(fcache::Tfcache, k) where {Tfcache<:FilterCache}
     Mₖ = fcache.Ms[k]
-    iₖ = fcache.is[k]
 
-    return Mₖ[:, (size(Mₖ, 2)-iₖ+1):end]
+    if k > 1
+        M⁺ₖ₋₁ = fcache.M⁺s[k-1]
+        P⁻ₖWₖ = Mₖ[:, (size(M⁺ₖ₋₁, 2)+1):end]
+    else
+        P⁻ₖWₖ = Mₖ
+    end
+
+    return P⁻ₖWₖ
 end
 
 function Base.push!(
@@ -178,7 +179,6 @@ function Base.push!(
 ) where {T,Tm,TM,TM⁺,TU,Tw,TW}
     push!(fcache.ms, x.m)
     push!(fcache.Ms, x.M)
-    push!(fcache.is, x.i)
     push!(fcache.M⁺s, M⁺)
     push!(fcache.Us, x.U)
     push!(fcache.ws, x.w)
