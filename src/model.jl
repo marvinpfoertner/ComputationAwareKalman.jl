@@ -9,6 +9,7 @@ function prior_mean(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:
 
 function prior_cov(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:Integer} end
 
+# TODO: Document that this should return the identity for k = 0
 function A(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:Integer} end
 
 # AbstractDiscretizedGaussMarkovProcess interface
@@ -55,9 +56,5 @@ function A(
     dgmp::Tdgmp,
     k::Tk,
 ) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tk<:Integer}
-    if k == 0
-        return I  # TODO: Add dimensionality
-    end
-
-    return A(dgmp, ts(dgmp)[k+1], ts(dgmp)[k])
+    return A(dgmp, ts(dgmp)[k+1], k > 0 ? ts(dgmp)[k] : ts(dgmp)[k+1])
 end
