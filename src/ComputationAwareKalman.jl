@@ -2,6 +2,7 @@ module ComputationAwareKalman
 
 using Distributions
 using LinearAlgebra
+using Random
 using Statistics
 
 include("model.jl")
