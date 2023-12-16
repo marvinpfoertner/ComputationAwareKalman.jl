@@ -16,7 +16,7 @@ function interpolate(
         mₜ = fcache.ms[k]
         Mₜ = fcache.Ms[k]
     else
-        Aₜₖ = transition(dgmp, t, ts(dgmp)[k])
+        Aₜₖ = A(dgmp, t, ts(dgmp)[k])
 
         mₜ = Aₜₖ * fcache.ms[k]
         Mₜ = Aₜₖ * fcache.M⁺s[k]
@@ -46,7 +46,7 @@ function interpolate(
         mₜ = scache.ms[k]
         Mₜ = M(scache, k)
     else
-        Aₜₖ = transition(dgmp, t, ts(dgmp)[k])
+        Aₜₖ = A(dgmp, t, ts(dgmp)[k])
 
         mₜ = Aₜₖ * scache.ms[k]
         Mₜ = Aₜₖ * scache.M⁺s[k]
@@ -59,7 +59,7 @@ function interpolate(
         Mˢₜ = Mₜ
     else
         Pₜ = StateCovariance(Σₜ, Mₜ)
-        A₍ₖ₊₁₎ₜ = transition(dgmp, ts(dgmp)[k+1], t)
+        A₍ₖ₊₁₎ₜ = A(dgmp, ts(dgmp)[k+1], t)
 
         mˢₜ = mₜ + Pₜ * (A₍ₖ₊₁₎ₜ' * scache.wˢs[k+1])
         Mˢₜ = [Mₜ;; Pₜ * (A₍ₖ₊₁₎ₜ' * scache.Wˢs[k+1])]

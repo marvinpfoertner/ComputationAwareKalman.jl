@@ -9,7 +9,7 @@ function prior_mean(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:
 
 function prior_cov(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:Integer} end
 
-function transition(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:Integer} end
+function A(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:Integer} end
 
 # AbstractDiscretizedGaussMarkovProcess interface
 
@@ -26,7 +26,7 @@ function prior_cov(
     t::Tt,
 ) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tt<:AbstractFloat} end
 
-function transition(
+function A(
     dgmp::Tdgmp,
     t::Tt,
     t₀::Tt,
@@ -51,7 +51,7 @@ function prior_cov(
     return prior_cov(dgmp, ts(dgmp)[max(k, 1)])
 end
 
-function transition(
+function A(
     dgmp::Tdgmp,
     k::Tk,
 ) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tk<:Integer}
@@ -59,5 +59,5 @@ function transition(
         return I  # TODO: Add dimensionality
     end
 
-    return transition(dgmp, ts(dgmp)[k+1], ts(dgmp)[k])
+    return A(dgmp, ts(dgmp)[k+1], ts(dgmp)[k])
 end

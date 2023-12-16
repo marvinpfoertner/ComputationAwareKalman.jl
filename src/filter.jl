@@ -10,7 +10,7 @@ function predict(
     Tmₖ₋₁<:AbstractVector{T},
     TMₖ₋₁<:AbstractMatrix{T},
 }
-    Aₖ₋₁ = transition(gmc, k - 1)
+    Aₖ₋₁ = A(gmc, k - 1)
     m⁻ₖ = Aₖ₋₁ * mₖ₋₁
     M⁻ₖ = Aₖ₋₁ * Mₖ₋₁
     return m⁻ₖ, M⁻ₖ
@@ -20,12 +20,15 @@ struct UpdateCache{
     T<:AbstractFloat,
     Tm<:AbstractVector{T},
     TM<:AbstractMatrix{T},
+    Ty<:AbstractVector{T},
     TU<:AbstractMatrix{T},
     Tw<:AbstractVector{T},
     TW<:AbstractMatrix{T},
 }
     m::Tm
     M::TM
+
+    y::Ty
 
     U::TU
 
@@ -89,7 +92,14 @@ function update(
     m = m⁻ + P⁻w
     M = [M⁻;; P⁻W]
 
-    return UpdateCache{T,typeof(m),typeof(M),typeof(U),typeof(w),typeof(W)}(m, M, U, w, W)
+    return UpdateCache{T,typeof(m),typeof(M),Ty,typeof(U),typeof(w),typeof(W)}(
+        m,
+        M,
+        y,
+        U,
+        w,
+        W,
+    )
 end
 
 function truncate(
@@ -111,6 +121,7 @@ struct FilterCache{
     Tm<:AbstractVector{T},
     TM<:AbstractMatrix{T},
     TM⁺<:AbstractMatrix{T},
+    Ty<:AbstractVector{T},
     TU<:AbstractMatrix{T},
     Tw<:AbstractVector{T},
     TW<:AbstractMatrix{T},
@@ -120,18 +131,29 @@ struct FilterCache{
 
     M⁺s::Vector{TM⁺}  # Truncated downdate to covariance of update filter belief
 
+    ys::Vector{Ty}
+
     Us::Vector{TU}
 
     ws::Vector{Tw}  # Hₖᵀuₖ
     Ws::Vector{TW}  # HₖᵀUₖ
 end
 
-function FilterCache{T,Tm,TM,TM⁺,TU,Tw,TW}() where {T,Tm,TM,TM⁺,TU,Tw,TW}
-    return FilterCache{T,Tm,TM,TM⁺,TU,Tw,TW}(Tm[], TM[], TM⁺[], TU[], Tw[], TW[])
+function FilterCache{T,Tm,TM,TM⁺,Ty,TU,Tw,TW}() where {T,Tm,TM,TM⁺,Ty,TU,Tw,TW}
+    return FilterCache{T,Tm,TM,TM⁺,Ty,TU,Tw,TW}(Tm[], TM[], TM⁺[], Ty[], TU[], Tw[], TW[])
 end
 
 function FilterCache{T}() where {T}
-    return FilterCache{T,Vector{T},Matrix{T},Matrix{T},Matrix{T},Vector{T},Matrix{T}}()
+    return FilterCache{
+        T,
+        Vector{T},  # Tm
+        Matrix{T},  # TM
+        Matrix{T},  # TM⁺
+        Vector{T},  # Ty
+        Matrix{T},  # TU
+        Vector{T},  # Tw
+        Matrix{T},  # TW
+    }()
 end
 
 function FilterCache()
@@ -173,13 +195,14 @@ function P⁻W(fcache::Tfcache, k) where {Tfcache<:FilterCache}
 end
 
 function Base.push!(
-    fcache::FilterCache{T,Tm,TM,TM⁺,TU,Tw,TW},
-    x::UpdateCache{T,Tm,TM,TU,Tw,TW},
+    fcache::FilterCache{T,Tm,TM,TM⁺,Ty,TU,Tw,TW},
+    x::UpdateCache{T,Tm,TM,Ty,TU,Tw,TW},
     M⁺::TM⁺,
-) where {T,Tm,TM,TM⁺,TU,Tw,TW}
+) where {T,Tm,TM,TM⁺,Ty,TU,Tw,TW}
     push!(fcache.ms, x.m)
     push!(fcache.Ms, x.M)
     push!(fcache.M⁺s, M⁺)
+    push!(fcache.ys, x.y)
     push!(fcache.Us, x.U)
     push!(fcache.ws, x.w)
     push!(fcache.Ws, x.W)
