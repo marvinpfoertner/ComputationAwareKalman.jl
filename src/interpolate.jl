@@ -1,11 +1,12 @@
 function interpolate(
     dgmp::Tdgmp,
     fcache::Tfcache,
-    t::T,
+    t::Tt,
 ) where {
     Tdgmp<:AbstractDiscretizedGaussMarkovProcess,
     T<:AbstractFloat,
     Tfcache<:FilterCache{T},
+    Tt<:AbstractFloat,
 }
     k = searchsortedlast(ts(dgmp), t)
 

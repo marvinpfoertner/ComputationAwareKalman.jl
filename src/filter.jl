@@ -20,15 +20,12 @@ struct UpdateCache{
     T<:AbstractFloat,
     Tm<:AbstractVector{T},
     TM<:AbstractMatrix{T},
-    Ty<:AbstractVector{T},
     TU<:AbstractMatrix{T},
     Tw<:AbstractVector{T},
     TW<:AbstractMatrix{T},
 }
     m::Tm
     M::TM
-
-    y::Ty
 
     U::TU
 
@@ -92,14 +89,7 @@ function update(
     m = m⁻ + P⁻w
     M = [M⁻;; P⁻W]
 
-    return UpdateCache{T,typeof(m),typeof(M),Ty,typeof(U),typeof(w),typeof(W)}(
-        m,
-        M,
-        y,
-        U,
-        w,
-        W,
-    )
+    return UpdateCache{T,typeof(m),typeof(M),typeof(U),typeof(w),typeof(W)}(m, M, U, w, W)
 end
 
 function truncate(
@@ -118,46 +108,54 @@ end
 
 struct FilterCache{
     T<:AbstractFloat,
+    Tmmod<:AbstractMeasurementModel,
+    Ty<:AbstractVector{T},
     Tm<:AbstractVector{T},
     TM<:AbstractMatrix{T},
-    TM⁺<:AbstractMatrix{T},
-    Ty<:AbstractVector{T},
     TU<:AbstractMatrix{T},
     Tw<:AbstractVector{T},
     TW<:AbstractMatrix{T},
+    TM⁺<:AbstractMatrix{T},
 }
+    mmods::Vector{Tmmod}
+    ys::Vector{Ty}
+
     ms::Vector{Tm}  # Mean of updated filter belief
     Ms::Vector{TM}  # Downdate to covariance of updated filter belief
-
-    M⁺s::Vector{TM⁺}  # Truncated downdate to covariance of update filter belief
-
-    ys::Vector{Ty}
 
     Us::Vector{TU}
 
     ws::Vector{Tw}  # Hₖᵀuₖ
     Ws::Vector{TW}  # HₖᵀUₖ
+
+    M⁺s::Vector{TM⁺}  # Truncated downdate to covariance of update filter belief
 end
 
-function FilterCache{T,Tm,TM,TM⁺,Ty,TU,Tw,TW}() where {T,Tm,TM,TM⁺,Ty,TU,Tw,TW}
-    return FilterCache{T,Tm,TM,TM⁺,Ty,TU,Tw,TW}(Tm[], TM[], TM⁺[], Ty[], TU[], Tw[], TW[])
+function FilterCache{T,Tmmod,Ty,Tm,TM,TU,Tw,TW,TM⁺}() where {T,Tmmod,Ty,Tm,TM,TU,Tw,TW,TM⁺}
+    return FilterCache{T,Tmmod,Ty,Tm,TM,TU,Tw,TW,TM⁺}(
+        Tmmod[],  # TODO: This should probably be a StructArray
+        Ty[],
+        Tm[],
+        TM[],
+        TM⁺[],
+        TU[],
+        Tw[],
+        TW[],
+    )
 end
 
-function FilterCache{T}() where {T}
+function FilterCache{T,Tmmod}() where {T,Tmmod}
     return FilterCache{
         T,
+        Tmmod,
+        Vector{T},  # Ty
         Vector{T},  # Tm
         Matrix{T},  # TM
-        Matrix{T},  # TM⁺
-        Vector{T},  # Ty
         Matrix{T},  # TU
         Vector{T},  # Tw
         Matrix{T},  # TW
+        Matrix{T},  # TM⁺
     }()
-end
-
-function FilterCache()
-    return FilterCache{Float64}()
 end
 
 function P(
@@ -195,15 +193,21 @@ function P⁻W(fcache::Tfcache, k) where {Tfcache<:FilterCache}
 end
 
 function Base.push!(
-    fcache::FilterCache{T,Tm,TM,TM⁺,Ty,TU,Tw,TW},
-    x::UpdateCache{T,Tm,TM,Ty,TU,Tw,TW},
+    fcache::FilterCache{T,Tmmod,Ty,Tm,TM,TU,Tw,TW,TM⁺},
+    mmod::Tmmod,
+    y::Ty,
+    x::UpdateCache{T,Tm,TM,TU,Tw,TW},
     M⁺::TM⁺,
-) where {T,Tm,TM,TM⁺,Ty,TU,Tw,TW}
+) where {T,Tmmod,Ty,Tm,TM,TU,Tw,TW,TM⁺}
+    push!(fcache.mmods, mmod)
+
+    push!(fcache.ys, y)
+
     push!(fcache.ms, x.m)
     push!(fcache.Ms, x.M)
-    push!(fcache.M⁺s, M⁺)
-    push!(fcache.ys, x.y)
     push!(fcache.Us, x.U)
     push!(fcache.ws, x.w)
     push!(fcache.Ws, x.W)
+
+    push!(fcache.M⁺s, M⁺)
 end
