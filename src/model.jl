@@ -121,3 +121,54 @@ function Base.rand(
 }
     return rand(rng, dgmp, ts(dgmp)[k+1], ts(dgmp)[k], xₖ)
 end
+
+# AbstractMeasurementModel interface
+abstract type AbstractMeasurementModel end
+
+function H(mmod::Tmmod) where {Tmmod<:AbstractMeasurementModel} end
+
+function Λ(mmod::Tmmod) where {Tmmod<:AbstractMeasurementModel} end
+
+function lsqrt_Λ(mmod::Tmmod) where {Tmmod<:AbstractMeasurementModel} end
+
+function Base.rand(
+    rng::Trng,
+    mmod::Tmmod,
+    x::Tx,
+) where {Trng<:Random.AbstractRNG,Tmmod<:AbstractMeasurementModel,Tx<:AbstractVector}
+    lsqrtΛ = lsqrt_Λ(mmod)
+
+    return H(mmod) * x + lsqrtΛ * randn(rng, eltype(lsqrtΛ), size(lsqrtΛ, 2))
+end
+
+# Basic MeasurementModel
+struct MeasurementModel{
+    T<:AbstractFloat,
+    TH<:AbstractMatrix{T},
+    TΛ<:AbstractMatrix{T},
+    Tlsqrt_Λ<:AbstractMatrix{T},
+} <: AbstractMeasurementModel
+    H::TH
+    Λ::TΛ
+    lsqrt_Λ::Tlsqrt_Λ
+end
+
+function MeasurementModel(
+    H::TH,
+    Λ::TΛ,
+) where {T<:AbstractFloat,TH<:AbstractMatrix{T},TΛ<:AbstractMatrix{T}}
+    lsqrt_Λ = sqrt(Λ)
+    return MeasurementModel(H, Λ, lsqrt_Λ)
+end
+
+function H(mmod::Tmmod) where {Tmmod<:MeasurementModel}
+    return mmod.H
+end
+
+function Λ(mmod::Tmmod) where {Tmmod<:MeasurementModel}
+    return mmod.Λ
+end
+
+function lsqrt_Λ(mmod::Tmmod) where {Tmmod<:MeasurementModel}
+    return mmod.lsqrt_Λ
+end
