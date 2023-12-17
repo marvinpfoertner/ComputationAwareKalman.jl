@@ -12,5 +12,6 @@ include("filter.jl")
 include("smoother.jl")
 
 include("interpolate.jl")
+include("sampling.jl")
 
 end
