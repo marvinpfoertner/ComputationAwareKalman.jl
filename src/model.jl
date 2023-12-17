@@ -16,6 +16,7 @@ function A(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:Integer} 
 #     k::Tk,
 # ) where {Trng<:Random.AbstractRNG,Tgmc<:AbstractGaussMarkovChain,Tk<:Integer} end
 
+# TODO: Document that this should return the identity for k = 0
 # function Base.rand(
 #     rng::Trng,
 #     gmc::Tgmc,
@@ -104,7 +105,7 @@ function Base.rand(
     dgmp::Tdgmp,
     k::Tk,
 ) where {Trng<:Random.AbstractRNG,Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tk<:Integer}
-    return rand(rng, dgmp, ts(tdgmp)[k])
+    return rand(rng, dgmp, k > 0 ? ts(dgmp)[k] : ts(dgmp)[k+1])
 end
 
 function Base.rand(
@@ -118,6 +119,10 @@ function Base.rand(
     Tk<:Integer,
     Txₖ<:AbstractVector,
 }
+    if k == 0
+        return xₖ
+    end
+
     return rand(rng, dgmp, ts(dgmp)[k+1], ts(dgmp)[k], xₖ)
 end
 

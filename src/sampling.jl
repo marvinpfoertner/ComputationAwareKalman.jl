@@ -1,5 +1,74 @@
 function Base.rand(
     rng::Trng,
+    gmc::Tgmc,
+    fcache::Tfcache,
+) where {
+    Trng<:Random.AbstractRNG,
+    Tgmc<:AbstractDiscretizedGaussMarkovProcess,
+    T<:AbstractFloat,
+    Tfcache<:FilterCache{T},
+}
+    x_samples = Vector{T}[]
+    w_samples = Vector{T}[]
+
+    xₖ₋₁_sample = rand(rng, gmc, 0)
+
+    for k = 1:length(gmc)
+        # Sample transition
+        x⁻ₖ_sample = rand(rng, gmc, k - 1, xₖ₋₁_sample)
+
+        # Sample measurement model
+        y⁻ₖ_sample = rand(rng, fcache.mmods[k], x⁻ₖ_sample)
+
+        # Matheron's rule for update step
+        yₖ = fcache.ys[k]
+        Uₖ = fcache.Us[k]
+        Wₖ = fcache.Ws[k]
+        P⁻ₖWₖ = P⁻W(fcache, k)
+
+        Uₖᵀsample_rₖ = Uₖ' * (yₖ - y⁻ₖ_sample)
+
+        sample_xₖ = x⁻ₖ_sample + P⁻ₖWₖ * Uₖᵀsample_rₖ
+        sample_wₖ = Wₖ * Uₖᵀsample_rₖ
+
+        push!(x_samples, sample_xₖ)
+        push!(w_samples, sample_wₖ)
+
+        xₖ₋₁_sample = sample_xₖ
+    end
+
+    xˢ_samples = [x_samples[end]]
+
+    wˢₖ₊₁_sample = w_samples[end]
+
+    for k = (length(gmc)-1):-1:1
+        Aₖᵀwˢₖ₊₁_sample = A(gmc, k)' * wˢₖ₊₁_sample
+
+        P⁻ₖWₖ = P⁻W(fcache, k)
+        WₖᵀP⁻ₖAₖᵀwˢₖ₊₁_sample = P⁻ₖWₖ' * Aₖᵀwˢₖ₊₁_sample
+
+        # Compute sample
+        xₖ_sample = x_samples[k]
+        P⁻ₖ = StateCovariance(prior_cov(gmc, k), M⁻(fcache, k))
+
+        xˢₖ_sample = xₖ_sample + P⁻ₖ * wˢₖ₊₁_sample - P⁻ₖWₖ * WₖᵀP⁻ₖAₖᵀwˢₖ₊₁_sample
+
+        push!(xˢ_samples, xˢₖ_sample)
+
+        # Compute wˢₖ sample
+        wₖ_sample = w_samples[k]
+        Wₖ = fcache.Ws[k]
+
+        wˢₖ_sample = wₖ_sample + Aₖᵀwˢₖ₊₁_sample - Wₖ * WₖᵀP⁻ₖAₖᵀwˢₖ₊₁_sample
+
+        wˢₖ₊₁_sample = wˢₖ_sample
+    end
+
+    return reverse!(xˢ_samples)
+end
+
+function Base.rand(
+    rng::Trng,
     dgmp::Tdgmp,
     fcache::Tfcache,
     ts_sample,
