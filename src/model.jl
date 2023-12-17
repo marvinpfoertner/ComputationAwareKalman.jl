@@ -1,7 +1,5 @@
-abstract type AbstractGaussMarkovChain end
-abstract type AbstractDiscretizedGaussMarkovProcess <: AbstractGaussMarkovChain end
-
 # AbstractGaussMarkovChain interface
+abstract type AbstractGaussMarkovChain end
 
 # function Base.length(gmc::Tgmc) where {Tgmc<:AbstractGaussMarkovChain} end
 
@@ -31,6 +29,7 @@ function A(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:Integer} 
 # } end
 
 # AbstractDiscretizedGaussMarkovProcess interface
+abstract type AbstractDiscretizedGaussMarkovProcess <: AbstractGaussMarkovChain end
 
 # TODO: Document that `ts` must be indexed by 1:length(gmp)
 function ts(gmp::Tgmp) where {Tgmp<:AbstractDiscretizedGaussMarkovProcess} end
