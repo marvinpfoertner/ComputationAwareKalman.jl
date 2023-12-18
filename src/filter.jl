@@ -108,7 +108,6 @@ end
 
 struct FilterCache{
     T<:AbstractFloat,
-    Tmmod<:AbstractMeasurementModel,
     Ty<:AbstractVector{T},
     Tm<:AbstractVector{T},
     TM<:AbstractMatrix{T},
@@ -117,7 +116,6 @@ struct FilterCache{
     TW<:AbstractMatrix{T},
     TM⁺<:AbstractMatrix{T},
 }
-    mmods::Vector{Tmmod}
     ys::Vector{Ty}
 
     ms::Vector{Tm}  # Mean of updated filter belief
@@ -131,23 +129,13 @@ struct FilterCache{
     M⁺s::Vector{TM⁺}  # Truncated downdate to covariance of update filter belief
 end
 
-function FilterCache{T,Tmmod,Ty,Tm,TM,TU,Tw,TW,TM⁺}() where {T,Tmmod,Ty,Tm,TM,TU,Tw,TW,TM⁺}
-    return FilterCache{T,Tmmod,Ty,Tm,TM,TU,Tw,TW,TM⁺}(
-        Tmmod[],  # TODO: This should probably be a StructArray
-        Ty[],
-        Tm[],
-        TM[],
-        TM⁺[],
-        TU[],
-        Tw[],
-        TW[],
-    )
+function FilterCache{T,Ty,Tm,TM,TU,Tw,TW,TM⁺}() where {T,Ty,Tm,TM,TU,Tw,TW,TM⁺}
+    return FilterCache{T,Ty,Tm,TM,TU,Tw,TW,TM⁺}(Ty[], Tm[], TM[], TU[], Tw[], TW[], TM⁺[])
 end
 
-function FilterCache{T,Tmmod}() where {T,Tmmod}
+function FilterCache{T}() where {T}
     return FilterCache{
         T,
-        Tmmod,
         Vector{T},  # Ty
         Vector{T},  # Tm
         Matrix{T},  # TM
@@ -156,6 +144,10 @@ function FilterCache{T,Tmmod}() where {T,Tmmod}
         Matrix{T},  # TW
         Matrix{T},  # TM⁺
     }()
+end
+
+function FilterCache()
+    return FilterCache{Float64}()
 end
 
 function P(
@@ -193,14 +185,11 @@ function P⁻W(fcache::Tfcache, k) where {Tfcache<:FilterCache}
 end
 
 function Base.push!(
-    fcache::FilterCache{T,Tmmod,Ty,Tm,TM,TU,Tw,TW,TM⁺},
-    mmod::Tmmod,
+    fcache::FilterCache{T,Ty,Tm,TM,TU,Tw,TW,TM⁺},
     y::Ty,
     x::UpdateCache{T,Tm,TM,TU,Tw,TW},
     M⁺::TM⁺,
-) where {T,Tmmod,Ty,Tm,TM,TU,Tw,TW,TM⁺}
-    push!(fcache.mmods, mmod)
-
+) where {T,Ty,Tm,TM,TU,Tw,TW,TM⁺}
     push!(fcache.ys, y)
 
     push!(fcache.ms, x.m)

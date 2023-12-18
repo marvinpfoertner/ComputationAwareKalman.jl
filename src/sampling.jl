@@ -1,10 +1,12 @@
 function Base.rand(
     rng::Trng,
     gmc::Tgmc,
+    mmod::Tmmod,
     fcache::Tfcache,
 ) where {
     Trng<:Random.AbstractRNG,
     Tgmc<:AbstractDiscretizedGaussMarkovProcess,
+    Tmmod<:AbstractMeasurementModel,
     T<:AbstractFloat,
     Tfcache<:FilterCache{T},
 }
@@ -18,7 +20,7 @@ function Base.rand(
         x⁻ₖ_sample = rand(rng, gmc, k - 1, xₖ₋₁_sample)
 
         # Sample measurement model
-        y⁻ₖ_sample = rand(rng, fcache.mmods[k], x⁻ₖ_sample)
+        y⁻ₖ_sample = rand(rng, mmod, k, x⁻ₖ_sample)
 
         # Matheron's rule for update step
         yₖ = fcache.ys[k]
@@ -70,11 +72,13 @@ end
 function Base.rand(
     rng::Trng,
     dgmp::Tdgmp,
+    mmod::Tmmod,
     fcache::Tfcache,
     ts_sample,
 ) where {
     Trng<:Random.AbstractRNG,
     Tdgmp<:AbstractDiscretizedGaussMarkovProcess,
+    Tmmod<:AbstractMeasurementModel,
     Tfcache<:FilterCache,
 }
     ts_sample = unique!(sort!(vcat(ts(dgmp), ts_sample), alg = MergeSort))
@@ -99,7 +103,7 @@ function Base.rand(
             k = k + 1
 
             # Sample y⁻ₖ
-            sample_y⁻ₖ = rand(rng, fcache.mmods[k], sample_x⁻ⱼ)
+            sample_y⁻ₖ = rand(rng, mmod, k, sample_x⁻ⱼ)
 
             # Sample update step
             yₖ = fcache.ys[k]
