@@ -1,36 +1,48 @@
 struct FilterCache{
     T<:AbstractFloat,
-    Ty<:AbstractVector{T},
+    Tm⁻<:AbstractVector{T},
     Tm<:AbstractVector{T},
     TM<:AbstractMatrix{T},
+    Tu<:AbstractVector{T},
     TU<:AbstractMatrix{T},
     Tw<:AbstractVector{T},
     TW<:AbstractMatrix{T},
     TM⁺<:AbstractMatrix{T},
 }
-    ys::Vector{Ty}
+    m⁻s::Vector{Tm⁻}
 
-    ms::Vector{Tm}  # Mean of updated filter belief
-    Ms::Vector{TM}  # Downdate to covariance of updated filter belief
+    ms::Vector{Tm}
+    Ms::Vector{TM}
 
+    us::Vector{Tu}
     Us::Vector{TU}
 
     ws::Vector{Tw}  # Hₖᵀuₖ
     Ws::Vector{TW}  # HₖᵀUₖ
 
-    M⁺s::Vector{TM⁺}  # Truncated downdate to covariance of update filter belief
+    M⁺s::Vector{TM⁺}
 end
 
-function FilterCache{T,Ty,Tm,TM,TU,Tw,TW,TM⁺}() where {T,Ty,Tm,TM,TU,Tw,TW,TM⁺}
-    return FilterCache{T,Ty,Tm,TM,TU,Tw,TW,TM⁺}(Ty[], Tm[], TM[], TU[], Tw[], TW[], TM⁺[])
+function FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺}() where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺}
+    return FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺}(
+        Tm⁻[],
+        Tm[],
+        TM[],
+        Tu[],
+        TU[],
+        Tw[],
+        TW[],
+        TM⁺[],
+    )
 end
 
 function FilterCache{T}() where {T}
     return FilterCache{
         T,
-        Vector{T},  # Ty
+        Vector{T},  # Tm⁻
         Vector{T},  # Tm
         Matrix{T},  # TM
+        Vector{T},  # Tu
         Matrix{T},  # TU
         Vector{T},  # Tw
         Matrix{T},  # TW
@@ -77,18 +89,19 @@ function P⁻W(fcache::Tfcache, k) where {Tfcache<:FilterCache}
 end
 
 function Base.push!(
-    fcache::FilterCache{T,Ty,Tm,TM,TU,Tw,TW,TM⁺},
-    y::Ty,
-    x::UpdateCache{T,Tm,TM,TU,Tw,TW},
+    fcache::FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺},
+    m⁻::Tm⁻,
+    x_cache::UpdateCache{T,Tm,TM,Tu,TU,Tw,TW},
     M⁺::TM⁺,
-) where {T,Ty,Tm,TM,TU,Tw,TW,TM⁺}
-    push!(fcache.ys, y)
+) where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺}
+    push!(fcache.m⁻s, m⁻)
 
-    push!(fcache.ms, x.m)
-    push!(fcache.Ms, x.M)
-    push!(fcache.Us, x.U)
-    push!(fcache.ws, x.w)
-    push!(fcache.Ws, x.W)
+    push!(fcache.ms, x_cache.m)
+    push!(fcache.Ms, x_cache.M)
+    push!(fcache.us, x_cache.u)
+    push!(fcache.Us, x_cache.U)
+    push!(fcache.ws, x_cache.w)
+    push!(fcache.Ws, x_cache.W)
 
     push!(fcache.M⁺s, M⁺)
 end

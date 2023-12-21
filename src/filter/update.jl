@@ -2,6 +2,7 @@ struct UpdateCache{
     T<:AbstractFloat,
     Tm<:AbstractVector{T},
     TM<:AbstractMatrix{T},
+    Tu<:AbstractVector{T},
     TU<:AbstractMatrix{T},
     Tw<:AbstractVector{T},
     TW<:AbstractMatrix{T},
@@ -9,6 +10,7 @@ struct UpdateCache{
     m::Tm
     M::TM
 
+    u::Tu
     U::TU
 
     w::Tw
@@ -71,5 +73,12 @@ function update(
     m = m⁻ + P⁻w
     M = [M⁻;; P⁻W]
 
-    return UpdateCache{T,typeof(m),typeof(M),typeof(U),typeof(w),typeof(W)}(m, M, U, w, W)
+    return UpdateCache{T,typeof(m),typeof(M),typeof(u),typeof(U),typeof(w),typeof(W)}(
+        m,
+        M,
+        u,
+        U,
+        w,
+        W,
+    )
 end
