@@ -1,5 +1,5 @@
 function truncate(
-    M::TM,
+    M::TM;
     svd_cutoff::T = 1e-12,
 ) where {T<:AbstractFloat,TM<:AbstractMatrix{T}}
     U, S, _ = svd(M)

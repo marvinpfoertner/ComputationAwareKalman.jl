@@ -23,9 +23,9 @@ function update(
     M⁻::TM⁻,
     H::TH,
     Λ::TΛ,
-    y::Ty,
-    abstol::T = 1e-6,
-    reltol::T = 1e-8,
+    y::Ty;
+    abstol::T = 1e-10,
+    reltol::T = 1e-12,
 ) where {
     T<:AbstractFloat,
     Tm⁻<:AbstractVector{T},

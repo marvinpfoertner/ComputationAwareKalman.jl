@@ -34,7 +34,7 @@ end
 
 function smooth(
     gmc::Tgmc,
-    fcache::Tfcache,
+    fcache::Tfcache;
     svd_cutoff::T = 1e-12,
 ) where {Tgmc<:AbstractGaussMarkovChain,T<:AbstractFloat,Tfcache<:FilterCache}
     mˢs = [fcache.ms[end]]
@@ -61,7 +61,7 @@ function smooth(
         wˢₖ = wₖ + Aₖᵀwˢₖ₊₁ - Wₖ * (P⁻Wₖ' * Aₖᵀwˢₖ₊₁)
         Wˢₖ = [Wₖ;; AₖᵀWˢₖ₊₁ - Wₖ * (P⁻Wₖ' * AₖᵀWˢₖ₊₁)]
 
-        Wˢₖ = truncate(Wˢₖ, svd_cutoff)
+        Wˢₖ = truncate(Wˢₖ, svd_cutoff = svd_cutoff)
 
         push!(wˢs, wˢₖ)
         push!(Wˢs, Wˢₖ)
