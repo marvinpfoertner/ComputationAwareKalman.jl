@@ -1,6 +1,48 @@
 function Base.rand(
     rng::Trng,
     gmc::Tgmc,
+) where {Trng<:Random.AbstractRNG,Tgmc<:AbstractGaussMarkovChain}
+    x_samples = Vector{Float64}[]
+
+    xₖ₋₁_sample = rand(rng, gmc, 0)
+
+    for k = 1:length(gmc)
+        # Sample transition
+        xₖ_sample = rand(rng, gmc, k - 1, xₖ₋₁_sample)
+
+        push!(x_samples, xₖ_sample)
+
+        xₖ₋₁_sample = xₖ_sample
+    end
+
+    return x_samples
+end
+
+function Base.rand(
+    rng::Trng,
+    gmc::Tgmc,
+    mmod::Tmmod,
+) where {
+    Trng<:Random.AbstractRNG,
+    Tgmc<:AbstractGaussMarkovChain,
+    Tmmod<:AbstractMeasurementModel,
+}
+    x_samples = rand(rng, gmc)
+    y_samples = Vector{eltype(x_samples[1])}[]
+
+    for k = 1:length(gmc)
+        xₖ_sample = x_samples[k]
+        yₖ_sample = rand(rng, mmod, k, xₖ_sample)
+
+        push!(y_samples, yₖ_sample)
+    end
+
+    return x_samples, y_samples
+end
+
+function Base.rand(
+    rng::Trng,
+    gmc::Tgmc,
     mmod::Tmmod,
     ys::Tys,
     fcache::Tfcache,
@@ -69,6 +111,33 @@ function Base.rand(
     end
 
     return reverse!(xˢ_samples)
+end
+
+function Base.rand(
+    rng::Trng,
+    dgmp::Tdgmp,
+    ts_sample::Tts,
+) where {
+    Trng<:Random.AbstractRNG,
+    Tdgmp<:AbstractDiscretizedGaussMarkovProcess,
+    Tts<:AbstractVector{<:AbstractFloat},
+}
+    samples_x = Vector{Float64}[]
+
+    tⱼ₋₁ = ts_sample[1]
+    sample_xⱼ₋₁ = rand(rng, dgmp, tⱼ₋₁)
+
+    for j = 1:size(ts_sample, 1)
+        tⱼ = ts_sample[j]
+        sample_xⱼ = rand(rng, dgmp, tⱼ, tⱼ₋₁, sample_xⱼ₋₁)
+
+        push!(samples_x, sample_xⱼ)
+
+        tⱼ₋₁ = tⱼ
+        sample_xⱼ₋₁ = sample_xⱼ
+    end
+
+    return samples_x
 end
 
 function Base.rand(
