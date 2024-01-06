@@ -18,7 +18,11 @@ include("filter/loop.jl")
 
 include("smoother.jl")
 
-include("interpolate.jl")
 include("sampling.jl")
+
+# Continuous-time Gauss-Markov Processes
+include("gmp/model.jl")
+include("gmp/interpolate.jl")
+include("gmp/sampling.jl")
 
 end
