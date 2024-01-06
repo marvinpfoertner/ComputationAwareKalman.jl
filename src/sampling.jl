@@ -6,7 +6,7 @@ function Base.rand(
     fcache::Tfcache,
 ) where {
     Trng<:Random.AbstractRNG,
-    Tgmc<:AbstractDiscretizedGaussMarkovProcess,
+    Tgmc<:AbstractGaussMarkovChain,
     Tmmod<:AbstractMeasurementModel,
     T<:AbstractFloat,
     Tys<:AbstractVector{<:AbstractVector{T}},
