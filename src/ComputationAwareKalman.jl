@@ -14,6 +14,7 @@ include("truncate.jl")
 include("filter/predict.jl")
 include("filter/update.jl")
 include("filter/cache.jl")
+include("filter/loop.jl")
 
 include("smoother.jl")
 
