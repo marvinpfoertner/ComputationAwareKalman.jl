@@ -37,7 +37,8 @@ function update(
 }
     P⁻ = StateCovariance(Σ, M⁻)
 
-    S = H * (P⁻ * H') + Λ
+    HP⁻Hᵀ = StateCovariance(H * (Σ * H'), H * M⁻)
+    S(v) = HP⁻Hᵀ * v + Λ * v
 
     i = 0
 
@@ -53,15 +54,15 @@ function update(
         v = r
 
         α = v' * r
-        d = v - U * (U' * (S * v))
-        η = v' * S * d
+        d = v - U * (U' * S(v))
+        η = v' * S(d)
 
         u = u + (α / η) * d
         U = [U;; sqrt(1 / η) * d]
 
         i = i + 1
 
-        r = r₀ - S * u
+        r = r₀ - S(u)
     end
 
     w = H' * u
