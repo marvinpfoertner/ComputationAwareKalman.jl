@@ -68,8 +68,9 @@ function update(
     w = H' * u
     W = H' * U
 
-    P⁻w = P⁻ * w
-    P⁻W = P⁻ * W
+
+    P⁻w = (P⁻ * H') * u
+    P⁻W = (P⁻ * H') * U
 
     m = m⁻ + P⁻w
     M = [M⁻;; P⁻W]
