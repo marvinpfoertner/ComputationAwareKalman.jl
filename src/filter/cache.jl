@@ -59,7 +59,7 @@ function P(
     fcache::Tfcache,
     k,
 ) where {Tgmc<:AbstractGaussMarkovChain,Tfcache<:FilterCache}
-    return StateCovariance(prior_cov(gmc, k), fcache.Ms[k])
+    return LowRankDowndatedMatrix(prior_cov(gmc, k), fcache.Ms[k])
 end
 
 function M⁻(fcache::Tfcache, k) where {Tfcache<:FilterCache}

@@ -35,9 +35,9 @@ function update(
     TΛ<:AbstractMatrix{T},
     Ty<:AbstractVector{T},
 }
-    P⁻ = StateCovariance(Σ, M⁻)
+    P⁻Hᵀ = LowRankDowndatedMatrix(Σ * H', M⁻, H * M⁻)
+    HP⁻Hᵀ = LowRankDowndatedMatrix(H * P⁻Hᵀ.A, P⁻Hᵀ.V)
 
-    HP⁻Hᵀ = StateCovariance(H * (Σ * H'), H * M⁻)
     S(v) = HP⁻Hᵀ * v + Λ * v
 
     i = 0
@@ -68,9 +68,8 @@ function update(
     w = H' * u
     W = H' * U
 
-
-    P⁻w = (P⁻ * H') * u
-    P⁻W = (P⁻ * H') * U
+    P⁻w = P⁻Hᵀ * u
+    P⁻W = P⁻Hᵀ * U
 
     m = m⁻ + P⁻w
     M = [M⁻;; P⁻W]

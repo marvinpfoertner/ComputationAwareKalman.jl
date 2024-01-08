@@ -115,7 +115,7 @@ function Base.rand(
             M⁻ⱼ = Aⱼₖ * fcache.Ms[k]
         end
 
-        P⁻ⱼ = StateCovariance(prior_cov(dgmp, tⱼ), M⁻ⱼ)
+        P⁻ⱼ = LowRankDowndatedMatrix(prior_cov(dgmp, tⱼ), M⁻ⱼ)
 
         # Compute sample
         sample_xˢⱼ = samples_x⁻[j] + P⁻ⱼ * sample_wˢⱼ

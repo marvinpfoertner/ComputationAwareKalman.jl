@@ -59,7 +59,7 @@ function interpolate(
         mˢₜ = mₜ
         Mˢₜ = Mₜ
     else
-        Pₜ = StateCovariance(Σₜ, Mₜ)
+        Pₜ = LowRankDowndatedMatrix(Σₜ, Mₜ)
         A₍ₖ₊₁₎ₜ = A(dgmp, ts(dgmp)[k+1], t)
 
         mˢₜ = mₜ + Pₜ * (A₍ₖ₊₁₎ₜ' * scache.wˢs[k+1])
