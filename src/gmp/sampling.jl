@@ -1,20 +1,16 @@
 function Base.rand(
     rng::Trng,
-    dgmp::Tdgmp,
+    dgmp::DiscretizedGaussMarkovProcess,
     ts_sample::Tts,
-) where {
-    Trng<:Random.AbstractRNG,
-    Tdgmp<:AbstractDiscretizedGaussMarkovProcess,
-    Tts<:AbstractVector{<:AbstractFloat},
-}
+) where {Trng<:Random.AbstractRNG,Tts<:AbstractVector{<:AbstractFloat}}
     samples_x = Vector{Float64}[]
 
     tⱼ₋₁ = ts_sample[1]
-    sample_xⱼ₋₁ = rand(rng, dgmp, tⱼ₋₁)
+    sample_xⱼ₋₁ = rand(rng, dgmp.gmp, tⱼ₋₁)
 
     for j = 1:size(ts_sample, 1)
         tⱼ = ts_sample[j]
-        sample_xⱼ = rand(rng, dgmp, tⱼ, tⱼ₋₁, sample_xⱼ₋₁)
+        sample_xⱼ = rand(rng, dgmp.gmp, tⱼ, tⱼ₋₁, sample_xⱼ₋₁)
 
         push!(samples_x, sample_xⱼ)
 
@@ -27,14 +23,13 @@ end
 
 function Base.rand(
     rng::Trng,
-    dgmp::Tdgmp,
+    dgmp::DiscretizedGaussMarkovProcess,
     mmod::Tmmod,
     ys::Tys,
     fcache::Tfcache,
     ts_sample,
 ) where {
     Trng<:Random.AbstractRNG,
-    Tdgmp<:AbstractDiscretizedGaussMarkovProcess,
     Tmmod<:AbstractMeasurementModel,
     Tys<:AbstractVector{<:AbstractVector{<:AbstractFloat}},
     Tfcache<:FilterCache,
@@ -49,13 +44,13 @@ function Base.rand(
     k = 0
 
     tⱼ₋₁ = ts_sample[1]
-    sample_xⱼ₋₁ = rand(rng, dgmp, tⱼ₋₁)
+    sample_xⱼ₋₁ = rand(rng, dgmp.gmp, tⱼ₋₁)
 
     for j = 1:size(ts_sample, 1)
         tⱼ = ts_sample[j]
 
         # Sample predict step
-        sample_x⁻ⱼ = rand(rng, dgmp, tⱼ, tⱼ₋₁, sample_xⱼ₋₁)
+        sample_x⁻ⱼ = rand(rng, dgmp.gmp, tⱼ, tⱼ₋₁, sample_xⱼ₋₁)
 
         if (k < length(dgmp) && tⱼ == ts(dgmp)[k+1])
             k = k + 1
@@ -98,7 +93,7 @@ function Base.rand(
 
 
         # Compute sample_wⱼ and P⁻ⱼ
-        A₍ⱼ₊₁₎ⱼ = A(dgmp, tⱼ₊₁, tⱼ)
+        A₍ⱼ₊₁₎ⱼ = A(dgmp.gmp, tⱼ₊₁, tⱼ)
         sample_wˢⱼ = A₍ⱼ₊₁₎ⱼ' * sample_wˢⱼ₊₁
 
         if tⱼ == ts(dgmp)[k]
@@ -110,12 +105,12 @@ function Base.rand(
 
             M⁻ⱼ = M⁻(fcache, k)
         else
-            Aⱼₖ = A(dgmp, tⱼ, ts(dgmp)[k])
+            Aⱼₖ = A(dgmp.gmp, tⱼ, ts(dgmp)[k])
 
             M⁻ⱼ = Aⱼₖ * fcache.Ms[k]
         end
 
-        P⁻ⱼ = LowRankDowndatedMatrix(prior_cov(dgmp, tⱼ), M⁻ⱼ)
+        P⁻ⱼ = LowRankDowndatedMatrix(Σ(dgmp.gmp, tⱼ), M⁻ⱼ)
 
         # Compute sample
         sample_xˢⱼ = samples_x⁻[j] + P⁻ⱼ * sample_wˢⱼ

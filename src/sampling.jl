@@ -95,7 +95,7 @@ function Base.rand(
 
         # Compute sample
         xₖ_sample = x_samples[k]
-        P⁻ₖ = LowRankDowndatedMatrix(prior_cov(gmc, k), M⁻(fcache, k))
+        P⁻ₖ = LowRankDowndatedMatrix(Σ(gmc, k), M⁻(fcache, k))
 
         xˢₖ_sample = xₖ_sample + P⁻ₖ * wˢₖ₊₁_sample - P⁻ₖWₖ * WₖᵀP⁻ₖAₖᵀwˢₖ₊₁_sample
 

@@ -12,7 +12,7 @@ function filter(
 }
     fcache = FilterCache()
 
-    mₖ₋₁ = prior_mean(gmc, 0)
+    mₖ₋₁ = μ(gmc, 0)
     M⁺ₖ₋₁ = zeros(eltype(mₖ₋₁), size(mₖ₋₁, 1), 0)
 
     for k = 1:length(gmc)
@@ -24,7 +24,7 @@ function filter(
 
         xₖ = update(
             m⁻ₖ,
-            prior_cov(gmc, k),
+            Σ(gmc, k),
             M⁻ₖ,
             H(mmod, k),
             Λ(mmod, k),

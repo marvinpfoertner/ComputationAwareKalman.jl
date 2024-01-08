@@ -3,12 +3,12 @@ abstract type AbstractGaussMarkovChain end
 # TODO: Document
 # function Base.length(gmc::Tgmc) where {Tgmc<:AbstractGaussMarkovChain} end
 
-function prior_mean(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:Integer} end
+function μ(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:Integer} end
 
-function prior_cov(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:Integer} end
+function Σ(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:Integer} end
 
 function lsqrt_Σ(gmc::Tgmc, k::Tk) where {Tgmc<:AbstractGaussMarkovChain,Tk<:Integer}
-    return sqrt(prior_cov(gmc, k))
+    return sqrt(Σ(gmc, k))
 end
 
 # TODO: Document that this must return the identity for k = 0
@@ -24,7 +24,7 @@ function Base.rand(
 ) where {Trng<:Random.AbstractRNG,Tgmc<:AbstractGaussMarkovChain,Tk<:Integer}
     lsqrt_Σₖ = lsqrt_Σ(gmc, k)
 
-    return prior_mean(gmc, k) + lsqrt_Σₖ * randn(rng, eltype(lsqrt_Σₖ), size(lsqrt_Σₖ, 2))
+    return μ(gmc, k) + lsqrt_Σₖ * randn(rng, eltype(lsqrt_Σₖ), size(lsqrt_Σₖ, 2))
 end
 
 # TODO: Document that this must return xₖ for k = 0

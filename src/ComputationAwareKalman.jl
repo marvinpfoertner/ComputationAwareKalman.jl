@@ -23,6 +23,7 @@ include("sampling.jl")
 
 # Continuous-time Gauss-Markov Processes
 include("gmp/model.jl")
+include("gmp/discretize.jl")
 include("gmp/interpolate.jl")
 include("gmp/sampling.jl")
 
