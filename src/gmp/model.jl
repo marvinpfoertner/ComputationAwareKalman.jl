@@ -13,34 +13,55 @@ function prior_cov(
     t::Tt,
 ) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tt<:AbstractFloat} end
 
+function lsqrt_Σ(
+    dgmp::Tdgmp,
+    t::Tt,
+) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tt<:AbstractFloat}
+    return sqrt(prior_cov(dgmp, t))
+end
+
 function A(
     dgmp::Tdgmp,
     t::Tt,
-    t₀::Tt,
+    s::Tt,
 ) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tt<:AbstractFloat} end
 
-# function Base.rand(
-#     rng::Trng,
-#     dgmp::Tdgmp,
-#     t::Tt,
-# ) where {
-#     Trng<:Random.AbstractRNG,
-#     Tdgmp<:AbstractDiscretizedGaussMarkovProcess,
-#     Tt<:AbstractFloat,
-# } end
+function A_b_lsqrt_Q(
+    dgmp::Tdgmp,
+    t::Tt,
+    s::Tt,
+) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tt<:AbstractFloat} end
 
-# function Base.rand(
-#     rng::Trng,
-#     dgmp::Tdgmp,
-#     t::Tt,
-#     s::Tt,
-#     xₛ::Txₛ,
-# ) where {
-#     Trng<:Random.AbstractRNG,
-#     Tdgmp<:AbstractDiscretizedGaussMarkovProcess,
-#     Tt<:AbstractFloat,
-#     Txₛ<:AbstractVector,
-# } end
+function Base.rand(
+    rng::Trng,
+    dgmp::Tdgmp,
+    t::Tt,
+) where {
+    Trng<:Random.AbstractRNG,
+    Tdgmp<:AbstractDiscretizedGaussMarkovProcess,
+    Tt<:AbstractFloat,
+}
+    lsqrt_Σₜ = lsqrt_Σ(dgmp, t)
+
+    return prior_mean(dgmp, t) + lsqrt_Σₜ * randn(rng, eltype(lsqrt_Σₜ), size(lsqrt_Σₜ, 2))
+end
+
+function Base.rand(
+    rng::Trng,
+    dgmp::Tdgmp,
+    t::Tt,
+    s::Tt,
+    xₛ::Txₛ,
+) where {
+    Trng<:Random.AbstractRNG,
+    Tdgmp<:AbstractDiscretizedGaussMarkovProcess,
+    Tt<:AbstractFloat,
+    Txₛ<:AbstractVector,
+}
+    Aₜₛ, bₜₛ, lsqrt_Qₜₛ = A_b_lsqrt_Q(dgmp, t, s)
+
+    return Aₜₛ * xₛ + bₜₛ + lsqrt_Qₜₛ * randn(rng, eltype(lsqrt_Qₜₛ), size(lsqrt_Qₜₛ, 2))
+end
 
 # AbstractDiscretizedGaussMarkovProcess implementation of AbstractGaussMarkovChain interface
 function Base.length(dgmp::Tdgmp) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess}
@@ -61,6 +82,13 @@ function prior_cov(
     return prior_cov(dgmp, ts(dgmp)[max(k, 1)])
 end
 
+function lsqrt_Σ(
+    dgmp::Tdgmp,
+    k::Tk,
+) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tk<:Integer}
+    return lsqrt_Σ(dgmp, ts(dgmp)[max(k, 1)])
+end
+
 function A(
     dgmp::Tdgmp,
     k::Tk,
@@ -68,28 +96,9 @@ function A(
     return A(dgmp, ts(dgmp)[k+1], k > 0 ? ts(dgmp)[k] : ts(dgmp)[k+1])
 end
 
-function Base.rand(
-    rng::Trng,
+function A_b_lsqrt_Q(
     dgmp::Tdgmp,
     k::Tk,
-) where {Trng<:Random.AbstractRNG,Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tk<:Integer}
-    return rand(rng, dgmp, k > 0 ? ts(dgmp)[k] : ts(dgmp)[k+1])
-end
-
-function Base.rand(
-    rng::Trng,
-    dgmp::Tdgmp,
-    k::Tk,
-    xₖ::Txₖ,
-) where {
-    Trng<:Random.AbstractRNG,
-    Tdgmp<:AbstractDiscretizedGaussMarkovProcess,
-    Tk<:Integer,
-    Txₖ<:AbstractVector,
-}
-    if k == 0
-        return xₖ
-    end
-
-    return rand(rng, dgmp, ts(dgmp)[k+1], ts(dgmp)[k], xₖ)
+) where {Tdgmp<:AbstractDiscretizedGaussMarkovProcess,Tk<:Integer}
+    return A_b_lsqrt_Q(dgmp, ts(dgmp)[k+1], k > 0 ? ts(dgmp)[k] : ts(dgmp)[k+1])
 end
