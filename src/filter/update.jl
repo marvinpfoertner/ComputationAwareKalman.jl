@@ -31,7 +31,7 @@ function update(
     Tm⁻<:AbstractVector{T},
     TΣ<:AbstractMatrix{T},
     TM⁻<:AbstractMatrix{T},
-    TH<:AbstractMatrix{T},
+    TH<:AbstractMatrix,
     TΛ<:AbstractMatrix{T},
     Ty<:AbstractVector{T},
 }

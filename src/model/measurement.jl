@@ -24,20 +24,16 @@ function Base.rand(
 end
 
 struct UniformMeasurementModel{
-    T<:AbstractFloat,
-    TH<:AbstractMatrix{T},
-    TΛ<:AbstractMatrix{T},
-    Tlsqrt_Λ<:AbstractMatrix{T},
+    TH<:AbstractMatrix,
+    TΛ<:AbstractMatrix,
+    Tlsqrt_Λ<:AbstractMatrix,
 } <: AbstractMeasurementModel
     H::TH
     Λ::TΛ
     lsqrt_Λ::Tlsqrt_Λ
 end
 
-function UniformMeasurementModel(
-    H::TH,
-    Λ::TΛ,
-) where {T<:AbstractFloat,TH<:AbstractMatrix{T},TΛ<:AbstractMatrix{T}}
+function UniformMeasurementModel(H::AbstractMatrix, Λ::AbstractMatrix)
     lsqrt_Λ = sqrt(Λ)
     return UniformMeasurementModel(H, Λ, lsqrt_Λ)
 end
