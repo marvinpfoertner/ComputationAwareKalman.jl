@@ -1,6 +1,7 @@
 module ComputationAwareKalman
 
 using Distributions
+using Kronecker
 using LinearAlgebra
 using Random
 using Statistics
@@ -26,5 +27,8 @@ include("gmp/model.jl")
 include("gmp/discretize.jl")
 include("gmp/interpolate.jl")
 include("gmp/sampling.jl")
+
+# Space-Time Separable Gauss-Markov Processes
+include("stsgmp/discretize_space.jl")
 
 end

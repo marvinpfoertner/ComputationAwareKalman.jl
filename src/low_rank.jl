@@ -44,7 +44,7 @@ Base.IndexStyle(::Type{<:LowRankDowndatedMatrix}) = IndexCartesian()
 Base.getindex(M::LowRankDowndatedMatrix, i::Int, j::Int) =
     M.A[i, j] - M.V[j, :]' * M.U[i, :]
 
-const MulMatTypes = [:AbstractMatrix, :Diagonal]
+const MulMatTypes = [:AbstractMatrix, :Diagonal, :GeneralizedKroneckerProduct]
 
 for TX in [:AbstractVector; MulMatTypes]
     @eval function Base.:*(M::LowRankDowndatedMatrix, X::$TX)
