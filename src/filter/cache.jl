@@ -8,6 +8,7 @@ struct FilterCache{
     Tw<:AbstractVector{T},
     TW<:AbstractMatrix{T},
     TM⁺<:AbstractMatrix{T},
+    TΠ⁺<:AbstractMatrix{T},
 }
     m⁻s::Vector{Tm⁻}
 
@@ -21,10 +22,22 @@ struct FilterCache{
     Ws::Vector{TW}  # HₖᵀUₖ
 
     M⁺s::Vector{TM⁺}
+    Π⁺s::Vector{TΠ⁺}
 end
 
-function FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺}() where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺}
-    return FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺}(
+function FilterCache{
+    T,
+    Tm⁻,
+    Tm,
+    TM,
+    Tu,
+    TU,
+    Tw,
+    TW,
+    TM⁺,
+    TΠ⁺,
+}() where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
+    return FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}(
         Tm⁻[],
         Tm[],
         TM[],
@@ -33,6 +46,7 @@ function FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺}() where {T,Tm⁻,Tm,TM,Tu,
         Tw[],
         TW[],
         TM⁺[],
+        TΠ⁺[],
     )
 end
 
@@ -47,6 +61,7 @@ function FilterCache{T}() where {T}
         Vector{T},  # Tw
         Matrix{T},  # TW
         Matrix{T},  # TM⁺
+        Matrix{T},  # TΠ⁺
     }()
 end
 
@@ -89,11 +104,12 @@ function P⁻W(fcache::Tfcache, k) where {Tfcache<:FilterCache}
 end
 
 function Base.push!(
-    fcache::FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺},
+    fcache::FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺},
     m⁻::Tm⁻,
     x_cache::UpdateCache{T,Tm,TM,Tu,TU,Tw,TW},
     M⁺::TM⁺,
-) where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺}
+    Π⁺::TΠ⁺,
+) where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
     push!(fcache.m⁻s, m⁻)
 
     push!(fcache.ms, x_cache.m)
@@ -104,4 +120,5 @@ function Base.push!(
     push!(fcache.Ws, x_cache.W)
 
     push!(fcache.M⁺s, M⁺)
+    push!(fcache.Π⁺s, Π⁺)
 end

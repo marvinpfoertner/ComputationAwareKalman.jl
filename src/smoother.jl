@@ -4,6 +4,7 @@ struct SmootherCache{
     TMˢ<:AbstractMatrix{T},
     Twˢ<:AbstractVector{T},
     TWˢ<:AbstractMatrix{T},
+    TΠˢ<:AbstractMatrix{T},
     Tm<:AbstractVector{T},
     TM⁺<:AbstractMatrix{T},
 }
@@ -12,6 +13,8 @@ struct SmootherCache{
 
     wˢs::Vector{Twˢ}
     Wˢs::Vector{TWˢ}
+
+    Πˢs::Vector{TΠˢ}
 
     # Quantities from the filter
     ms::Vector{Tm}  # Mean of updated filter belief
@@ -43,6 +46,8 @@ function smooth(
     wˢs = [fcache.ws[end]]
     Wˢs = [fcache.Ws[end]]
 
+    Πˢs = Matrix{T}[]
+
     for k in reverse(1:length(gmc)-1)
         Aₖ = A(gmc, k)
         Aₖᵀwˢₖ₊₁ = Aₖ' * wˢs[end]
@@ -61,10 +66,12 @@ function smooth(
         wˢₖ = wₖ + Aₖᵀwˢₖ₊₁ - Wₖ * (P⁻Wₖ' * Aₖᵀwˢₖ₊₁)
         Wˢₖ = [Wₖ;; AₖᵀWˢₖ₊₁ - Wₖ * (P⁻Wₖ' * AₖᵀWˢₖ₊₁)]
 
-        Wˢₖ = truncate(Wˢₖ, svd_cutoff = svd_cutoff)
+        Wˢₖ, Πˢₖ = truncate(Wˢₖ, svd_cutoff = svd_cutoff)
 
         push!(wˢs, wˢₖ)
         push!(Wˢs, Wˢₖ)
+
+        push!(Πˢs, Πˢₖ)
     end
 
     return SmootherCache(
@@ -72,6 +79,7 @@ function smooth(
         reverse!(Mˢs),
         reverse!(wˢs),
         reverse!(Wˢs),
+        reverse!(Πˢs),
         fcache.ms,
         fcache.M⁺s,
     )

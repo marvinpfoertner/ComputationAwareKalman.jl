@@ -34,9 +34,9 @@ function filter(
         )
 
         # Truncate
-        M⁺ₖ = truncate(xₖ.M, svd_cutoff = svd_cutoff)
+        M⁺ₖ, Π⁺ₖ = truncate(xₖ.M, svd_cutoff = svd_cutoff)
 
-        push!(fcache, yₖ, xₖ, M⁺ₖ)
+        push!(fcache, yₖ, xₖ, M⁺ₖ, Π⁺ₖ)
 
         mₖ₋₁ = xₖ.m
         M⁺ₖ₋₁ = M⁺ₖ
