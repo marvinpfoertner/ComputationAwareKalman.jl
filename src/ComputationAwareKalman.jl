@@ -30,7 +30,6 @@ include("gmp/sampling.jl")
 
 # Space-Time Separable Gauss-Markov Processes
 include("stsgmp/model.jl")
-include("stsgmp/covariance_matrix.jl")
 include("stsgmp/discretize.jl")
 
 end

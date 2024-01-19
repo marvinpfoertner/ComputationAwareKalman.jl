@@ -4,7 +4,7 @@ function discretize(stsgmp::SpaceTimeSeparableGaussMarkovProcess, xs)
     return SpatiallyDiscretizedSTSGMP(
         stsgmp,
         xs,
-        mean_vec(stsgmp.spatial_mean_fn, xs),
+        mean_vector(stsgmp.spatial_mean_fn, xs),
         spatial_cov_mat,
         sqrt(spatial_cov_mat),
     )
@@ -14,9 +14,11 @@ function discretize(stsgmp::SpaceTimeSeparableGaussMarkovProcess, ts, xs)
     return discretize(discretize(stsgmp, xs), ts)
 end
 
-function mean_vec(mean_fn, xs::AbstractVector)
+function mean_vector(mean_fn, xs::AbstractVector)
     return [mean_fn(x) for x in xs]
 end
+
+function covariance_matrix end
 
 struct SpatiallyDiscretizedSTSGMP{
     T<:AbstractFloat,
