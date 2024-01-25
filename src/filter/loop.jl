@@ -2,9 +2,8 @@ function filter(
     gmc::Tgmc,
     mmod::Tmmod,
     ys::Tys;
-    abstol = 1e-6,
-    reltol = 1e-8,
-    svd_cutoff = 1e-12,
+    update_kwargs = (;),
+    truncate_kwargs = (;),
 ) where {
     Tgmc<:AbstractGaussMarkovChain,
     Tmmod<:AbstractMeasurementModel,
@@ -22,19 +21,10 @@ function filter(
         # Update
         yₖ = ys[k]
 
-        xₖ = update(
-            m⁻ₖ,
-            Σ(gmc, k),
-            M⁻ₖ,
-            H(mmod, k),
-            Λ(mmod, k),
-            yₖ,
-            abstol = abstol,
-            reltol = reltol,
-        )
+        xₖ = update(m⁻ₖ, Σ(gmc, k), M⁻ₖ, H(mmod, k), Λ(mmod, k), yₖ; update_kwargs...)
 
         # Truncate
-        M⁺ₖ, Π⁺ₖ = truncate(xₖ.M, svd_cutoff = svd_cutoff)
+        M⁺ₖ, Π⁺ₖ = truncate(xₖ.M; truncate_kwargs...)
 
         push!(fcache, yₖ, xₖ, M⁺ₖ, Π⁺ₖ)
 

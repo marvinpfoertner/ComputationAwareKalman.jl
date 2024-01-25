@@ -1,15 +1,19 @@
 function truncate(
-    M::TM;
-    svd_cutoff::T = 1e-12,
-) where {T<:AbstractFloat,TM<:AbstractMatrix{T}}
+    M::AbstractMatrix{T};
+    max_cols::Integer = size(M, 1),
+    min_sval::T = eps(T),
+) where {T<:AbstractFloat}
     U, S, V = svd(M)
 
-    trunc_idx = findlast(S .> svd_cutoff)
-    if isnothing(trunc_idx)
-        trunc_idx = 0
+    j_max = findlast(S .>= min_sval)
+
+    if isnothing(j_max)
+        j_max = 0
     end
 
-    M⁺ = U[:, 1:trunc_idx] * Diagonal(S[1:trunc_idx])
+    j_max = min(j_max, max_cols)
 
-    return M⁺, V[:, 1:trunc_idx]
+    M⁺ = U[:, 1:j_max] * Diagonal(S[1:j_max])
+
+    return M⁺, V[:, 1:j_max]
 end
