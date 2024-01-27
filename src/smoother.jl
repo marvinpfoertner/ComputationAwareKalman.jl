@@ -35,7 +35,7 @@ function M(scache::Tscache, k) where {Tscache<:SmootherCache}
     return Mₖ
 end
 
-function smooth(gmc::AbstractGaussMarkovChain, fcache::FilterCache; truncate_kwargs = (;))
+function smooth(gmc::AbstractGaussMarkovChain, fcache::FilterCache; callback_fn=((args...; kwargs...) -> nothing), truncate_kwargs = (;))
     mˢs = [fcache.ms[end]]
     Mˢs = [fcache.Ms[end]]
 
@@ -43,6 +43,8 @@ function smooth(gmc::AbstractGaussMarkovChain, fcache::FilterCache; truncate_kwa
     Wˢs = [fcache.Ws[end]]
 
     Πˢs = Matrix{eltype(Wˢs[end])}[]
+
+    callback_fn(length(gmc))
 
     for k in reverse(1:length(gmc)-1)
         Aₖ = A(gmc, k)
@@ -68,6 +70,8 @@ function smooth(gmc::AbstractGaussMarkovChain, fcache::FilterCache; truncate_kwa
         push!(Wˢs, Wˢₖ)
 
         push!(Πˢs, Πˢₖ)
+
+        callback_fn(k)
     end
 
     return SmootherCache(
