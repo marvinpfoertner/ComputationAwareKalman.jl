@@ -1,7 +1,7 @@
 function truncate(
     M::AbstractMatrix{T};
     max_cols::Integer = size(M, 1),
-    min_sval::T = eps(T),
+    min_sval::T = sqrt(eps(T)),
 ) where {T<:AbstractFloat}
     U, S, V = svd(M)
 
