@@ -62,3 +62,9 @@ for TX in [MulMatTypes; MulAdjTypes]
         return X * M.A - (X * M.U) * M.V'
     end
 end
+
+function LinearAlgebra.diag(M::LowRankDowndatedMatrix)
+    size(M, 1) == size(M, 2) || error("currently, diag(::LowRankDowndatedMatrix) is only implemented for square matrices")
+
+    return diag(M.A) - sum(M.U .* M.V, dims=2)[:, 1]
+end
