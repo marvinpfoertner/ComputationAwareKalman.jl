@@ -53,7 +53,7 @@ function smooth(gmc::AbstractGaussMarkovChain, fcache::FilterCache; callback_fn=
 
         Pₖ = P(gmc, fcache, k)
         mˢₖ = fcache.ms[k] + Pₖ * Aₖᵀwˢₖ₊₁
-        Mˢₖ = [fcache.M⁺s[k];; Pₖ * AₖᵀWˢₖ₊₁]
+        Mˢₖ = [fcache.Ms[k];; Pₖ * AₖᵀWˢₖ₊₁]
 
         push!(mˢs, mˢₖ)
         push!(Mˢs, Mˢₖ)
