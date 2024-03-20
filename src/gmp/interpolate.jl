@@ -25,22 +25,22 @@ end
 
 function interpolate(
     dgmp::DiscretizedGaussMarkovProcess,
-    scache::Tscache,
-    t::Tt,
-) where {T<:AbstractFloat,Tscache<:SmootherCache{T},Tt<:AbstractFloat}
+    scache::AbstractSmootherCache,
+    t::AbstractFloat,
+)
     k = searchsortedlast(ts(dgmp), t)
 
     if k < 1
         mₜ = μ(dgmp.gmp, t)
-        Mₜ = zeros(T, size(m, 1), 0)
+        Mₜ = zeros(eltype(mₜ), size(m, 1), 0)
     elseif t == ts(dgmp)[k]
-        mₜ = scache.ms[k]
+        mₜ = m(scache, k)
         Mₜ = M(scache, k)
     else
         Aₜₖ = A(dgmp.gmp, t, ts(dgmp)[k])
 
-        mₜ = Aₜₖ * scache.ms[k]
-        Mₜ = Aₜₖ * scache.M⁺s[k]
+        mₜ = Aₜₖ * m(scache, k)
+        Mₜ = Aₜₖ * M⁺(scache, k)
     end
 
     Σₜ = Σ(dgmp.gmp, t)
@@ -52,8 +52,8 @@ function interpolate(
         Pₜ = LowRankDowndatedMatrix(Σₜ, Mₜ)
         A₍ₖ₊₁₎ₜ = A(dgmp.gmp, ts(dgmp)[k+1], t)
 
-        mˢₜ = mₜ + Pₜ * (A₍ₖ₊₁₎ₜ' * scache.wˢs[k+1])
-        Mˢₜ = [Mₜ;; Pₜ * (A₍ₖ₊₁₎ₜ' * scache.Wˢs[k+1])]
+        mˢₜ = mₜ + Pₜ * (A₍ₖ₊₁₎ₜ' * wˢ(scache, k + 1))
+        Mˢₜ = [Mₜ;; Pₜ * (A₍ₖ₊₁₎ₜ' * Wˢ(scache, k + 1))]
     end
 
     return ConditionalGaussianBelief(mˢₜ, Σₜ, Mˢₜ)

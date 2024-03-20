@@ -18,7 +18,8 @@ include("filter/update.jl")
 include("filter/cache.jl")
 include("filter/loop.jl")
 
-include("smoother.jl")
+include("smoother/cache.jl")
+include("smoother/loop.jl")
 
 include("sampling.jl")
 
