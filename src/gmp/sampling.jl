@@ -22,18 +22,13 @@ function Base.rand(
 end
 
 function Base.rand(
-    rng::Trng,
+    rng::Random.AbstractRNG,
     dgmp::DiscretizedGaussMarkovProcess,
-    mmod::Tmmod,
-    ys::Tys,
-    fcache::Tfcache,
+    mmod::AbstractMeasurementModel,
+    ys::AbstractVector{<:AbstractVector{<:AbstractFloat}},
+    fcache::AbstractFilterCache,
     ts_sample,
-) where {
-    Trng<:Random.AbstractRNG,
-    Tmmod<:AbstractMeasurementModel,
-    Tys<:AbstractVector{<:AbstractVector{<:AbstractFloat}},
-    Tfcache<:FilterCache,
-}
+)
     ts_sample = unique!(sort!(vcat(ts(dgmp), ts_sample), alg = MergeSort))
 
     samples_x⁻ = Vector{Float64}[]
@@ -60,8 +55,8 @@ function Base.rand(
 
             # Sample update step
             yₖ = ys[k]
-            Uₖ = fcache.Us[k]
-            Wₖ = fcache.Ws[k]
+            Uₖ = U(fcache, k)
+            Wₖ = W(fcache, k)
             P⁻ₖWₖ = P⁻W(fcache, k)
 
             Uₖᵀsample_rₖ = Uₖ' * (yₖ - sample_y⁻ₖ)
@@ -98,7 +93,7 @@ function Base.rand(
 
         if tⱼ == ts(dgmp)[k]
             sample_wₖ = samples_w[k]
-            Wₖ = fcache.Ws[k]
+            Wₖ = W(fcache, k)
             P⁻ₖWₖ = P⁻W(fcache, k)
 
             sample_wˢⱼ = sample_wₖ + sample_wˢⱼ - Wₖ * (P⁻ₖWₖ' * sample_wˢⱼ)
@@ -107,7 +102,7 @@ function Base.rand(
         else
             Aⱼₖ = A(dgmp.gmp, tⱼ, ts(dgmp)[k])
 
-            M⁻ⱼ = Aⱼₖ * fcache.Ms[k]
+            M⁻ⱼ = Aⱼₖ * M(fcache, k)
         end
 
         P⁻ⱼ = LowRankDowndatedMatrix(Σ(dgmp.gmp, tⱼ), M⁻ⱼ)

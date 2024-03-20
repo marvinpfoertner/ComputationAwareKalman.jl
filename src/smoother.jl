@@ -35,12 +35,17 @@ function M(scache::Tscache, k) where {Tscache<:SmootherCache}
     return Mₖ
 end
 
-function smooth(gmc::AbstractGaussMarkovChain, fcache::FilterCache; callback_fn=((args...; kwargs...) -> nothing), truncate_kwargs = (;))
-    mˢs = [fcache.ms[end]]
-    Mˢs = [fcache.Ms[end]]
+function smooth(
+    gmc::AbstractGaussMarkovChain,
+    fcache::AbstractFilterCache;
+    callback_fn = ((args...; kwargs...) -> nothing),
+    truncate_kwargs = (;),
+)
+    mˢs = [m(fcache, length(gmc))]
+    Mˢs = [M(fcache, length(gmc))]
 
-    wˢs = [fcache.ws[end]]
-    Wˢs = [fcache.Ws[end]]
+    wˢs = [w(fcache, length(gmc))]
+    Wˢs = [W(fcache, length(gmc))]
 
     Πˢs = Matrix{eltype(Wˢs[end])}[]
 
@@ -52,14 +57,14 @@ function smooth(gmc::AbstractGaussMarkovChain, fcache::FilterCache; callback_fn=
         AₖᵀWˢₖ₊₁ = Aₖ' * Wˢs[end]
 
         Pₖ = P(gmc, fcache, k)
-        mˢₖ = fcache.ms[k] + Pₖ * Aₖᵀwˢₖ₊₁
-        Mˢₖ = [fcache.Ms[k];; Pₖ * AₖᵀWˢₖ₊₁]
+        mˢₖ = m(fcache, k) + Pₖ * Aₖᵀwˢₖ₊₁
+        Mˢₖ = [M(fcache, k);; Pₖ * AₖᵀWˢₖ₊₁]
 
         push!(mˢs, mˢₖ)
         push!(Mˢs, Mˢₖ)
 
-        wₖ = fcache.ws[k]
-        Wₖ = fcache.Ws[k]
+        wₖ = w(fcache, k)
+        Wₖ = W(fcache, k)
         P⁻Wₖ = P⁻W(fcache, k)
         wˢₖ = wₖ + Aₖᵀwˢₖ₊₁ - Wₖ * (P⁻Wₖ' * Aₖᵀwˢₖ₊₁)
         Wˢₖ = [Wₖ;; AₖᵀWˢₖ₊₁ - Wₖ * (P⁻Wₖ' * AₖᵀWˢₖ₊₁)]
@@ -80,7 +85,7 @@ function smooth(gmc::AbstractGaussMarkovChain, fcache::FilterCache; callback_fn=
         reverse!(wˢs),
         reverse!(Wˢs),
         reverse!(Πˢs),
-        fcache.ms,
-        fcache.M⁺s,
+        fcache.ms,  # TODO: This only works for `FilterCache`
+        fcache.M⁺s,  # TODO: This only works for `FilterCache`
     )
 end

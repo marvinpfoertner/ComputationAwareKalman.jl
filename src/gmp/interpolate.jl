@@ -1,21 +1,21 @@
 function interpolate(
     dgmp::DiscretizedGaussMarkovProcess,
-    fcache::Tfcache,
-    t::Tt,
-) where {T<:AbstractFloat,Tfcache<:FilterCache{T},Tt<:AbstractFloat}
+    fcache::AbstractFilterCache,
+    t::AbstractFloat,
+)
     k = searchsortedlast(ts(dgmp), t)
 
     if k < 1
         mₜ = μ(dgmp.gmp, t)
-        Mₜ = zeros(T, size(mₜ, 1), 0)
+        Mₜ = zeros(eltype(mₜ), size(mₜ, 1), 0)
     elseif t == ts(dgmp)[k]
-        mₜ = fcache.ms[k]
-        Mₜ = fcache.Ms[k]
+        mₜ = m(fcache, k)
+        Mₜ = M(fcache, k)
     else
         Aₜₖ = A(dgmp.gmp, t, ts(dgmp)[k])
 
-        mₜ = Aₜₖ * fcache.ms[k]
-        Mₜ = Aₜₖ * fcache.M⁺s[k]
+        mₜ = Aₜₖ * m(fcache, k)
+        Mₜ = Aₜₖ * M⁺(fcache, k)
     end
 
     Σₜ = Σ(dgmp.gmp, t)

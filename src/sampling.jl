@@ -41,21 +41,14 @@ function Base.rand(
 end
 
 function Base.rand(
-    rng::Trng,
-    gmc::Tgmc,
-    mmod::Tmmod,
-    ys::Tys,
-    fcache::Tfcache,
-) where {
-    Trng<:Random.AbstractRNG,
-    Tgmc<:AbstractGaussMarkovChain,
-    Tmmod<:AbstractMeasurementModel,
-    T<:AbstractFloat,
-    Tys<:AbstractVector{<:AbstractVector{T}},
-    Tfcache<:FilterCache{T},
-}
-    x_samples = Vector{T}[]
-    w_samples = Vector{T}[]
+    rng::Random.AbstractRNG,
+    gmc::AbstractGaussMarkovChain,
+    mmod::AbstractMeasurementModel,
+    ys::AbstractVector{<:AbstractVector{<:AbstractFloat}},
+    fcache::AbstractFilterCache,
+)
+    x_samples = Vector{Float64}[]
+    w_samples = Vector{Float64}[]
 
     xₖ₋₁_sample = rand(rng, gmc, 0)
 
@@ -68,8 +61,8 @@ function Base.rand(
 
         # Matheron's rule for update step
         yₖ = ys[k]
-        Uₖ = fcache.Us[k]
-        Wₖ = fcache.Ws[k]
+        Uₖ = U(fcache, k)
+        Wₖ = W(fcache, k)
         P⁻ₖWₖ = P⁻W(fcache, k)
 
         Uₖᵀsample_rₖ = Uₖ' * (yₖ - y⁻ₖ_sample)
@@ -103,7 +96,7 @@ function Base.rand(
 
         # Compute wˢₖ sample
         wₖ_sample = w_samples[k]
-        Wₖ = fcache.Ws[k]
+        Wₖ = W(fcache, k)
 
         wˢₖ_sample = wₖ_sample + Aₖᵀwˢₖ₊₁_sample - Wₖ * WₖᵀP⁻ₖAₖᵀwˢₖ₊₁_sample
 

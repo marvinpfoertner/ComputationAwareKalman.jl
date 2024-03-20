@@ -1,3 +1,23 @@
+abstract type AbstractFilterCache end
+
+function M⁻(fcache::AbstractFilterCache, k)
+    Mₖ = M(fcache, k)
+    Wₖ = W(fcache, k)
+
+    return Mₖ[:, 1:(size(Mₖ, 2)-size(Wₖ, 2))]
+end
+
+function P⁻W(fcache::AbstractFilterCache, k)
+    Mₖ = M(fcache, k)
+    Wₖ = W(fcache, k)
+
+    return Mₖ[:, (size(Mₖ, 2)-size(Wₖ, 2)+1):end]
+end
+
+function P(gmc::AbstractGaussMarkovChain, fcache::AbstractFilterCache, k)
+    return LowRankDowndatedMatrix(Σ(gmc, k), M(fcache, k))
+end
+
 struct FilterCache{
     T<:AbstractFloat,
     Tm⁻<:AbstractVector{T},
@@ -9,7 +29,7 @@ struct FilterCache{
     TW<:AbstractMatrix{T},
     TM⁺<:AbstractMatrix{T},
     TΠ⁺<:AbstractMatrix{T},
-}
+} <: AbstractFilterCache
     m⁻s::Vector{Tm⁻}
 
     ms::Vector{Tm}
@@ -69,38 +89,40 @@ function FilterCache()
     return FilterCache{Float64}()
 end
 
-function P(
-    gmc::Tgmc,
-    fcache::Tfcache,
-    k,
-) where {Tgmc<:AbstractGaussMarkovChain,Tfcache<:FilterCache}
-    return LowRankDowndatedMatrix(Σ(gmc, k), fcache.Ms[k])
+function m⁻(fcache::FilterCache, k)
+    return fcache.m⁻s[k]
 end
 
-function M⁻(fcache::Tfcache, k) where {Tfcache<:FilterCache}
-    Mₖ = fcache.Ms[k]
-
-    if k > 1
-        M⁺ₖ₋₁ = fcache.M⁺s[k-1]
-        M⁻ₖ = Mₖ[:, 1:size(M⁺ₖ₋₁, 2)]
-    else
-        M⁻ₖ = Mₖ[:, 1:0]
-    end
-
-    return M⁻ₖ
+function m(fcache::FilterCache, k)
+    return fcache.ms[k]
 end
 
-function P⁻W(fcache::Tfcache, k) where {Tfcache<:FilterCache}
-    Mₖ = fcache.Ms[k]
+function M(fcache::FilterCache, k)
+    return fcache.Ms[k]
+end
 
-    if k > 1
-        M⁺ₖ₋₁ = fcache.M⁺s[k-1]
-        P⁻ₖWₖ = Mₖ[:, (size(M⁺ₖ₋₁, 2)+1):end]
-    else
-        P⁻ₖWₖ = Mₖ
-    end
+function u(fcache::FilterCache, k)
+    return fcache.us[k]
+end
 
-    return P⁻ₖWₖ
+function U(fcache::FilterCache, k)
+    return fcache.Us[k]
+end
+
+function w(fcache::FilterCache, k)
+    return fcache.ws[k]
+end
+
+function W(fcache::FilterCache, k)
+    return fcache.Ws[k]
+end
+
+function M⁺(fcache::FilterCache, k)
+    return fcache.M⁺s[k]
+end
+
+function Π⁺(fcache::FilterCache, k)
+    return fcache.Π⁺s[k]
 end
 
 function Base.push!(
