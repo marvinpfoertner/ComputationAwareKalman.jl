@@ -9,5 +9,5 @@ struct RandomGaussianPolicy{Trng<:Random.AbstractRNG}
 end
 
 function (policy::RandomGaussianPolicy)(; r::AbstractVector{<:AbstractFloat}, kwargs...)
-    return randn(policy.rng, length(r))
+    return randn(policy.rng, eltype(r), length(r))
 end
