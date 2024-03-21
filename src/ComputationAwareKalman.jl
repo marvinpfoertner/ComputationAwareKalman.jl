@@ -14,6 +14,7 @@ include("state_covariance.jl")
 include("truncate.jl")
 
 include("filter/predict.jl")
+include("filter/policy.jl")
 include("filter/update.jl")
 include("filter/cache.jl")
 include("filter/loop.jl")

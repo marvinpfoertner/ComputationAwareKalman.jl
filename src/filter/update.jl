@@ -27,6 +27,7 @@ function update(
     abstol::T = 1e-10,
     reltol::T = 1e-12,
     max_iter::Integer = size(H, 1),
+    policy = CGPolicy(),
 ) where {
     T<:AbstractFloat,
     Tm⁻<:AbstractVector{T},
@@ -52,7 +53,7 @@ function update(
     tol = max(abstol, reltol * norm(y, 2))
 
     while i < max_iter && norm(r, 2) > tol
-        v = r
+        v = policy(i = i, u = u, U = U, r = r)
 
         α = v' * r
         d = v - U * (U' * S(v))
