@@ -8,13 +8,13 @@ struct CoordinatePolicy
     idcs::Vector{Int}
 end
 
-function (policy::RandomGaussianPolicy)(;
+function (policy::CoordinatePolicy)(;
     i::Integer,
     r::AbstractVector{<:AbstractFloat},
     kwargs...,
 )
     v = zeros(Bool, size(r))
-    v[i] = 1
+    v[i+1] = 1
     return v
 end
 
