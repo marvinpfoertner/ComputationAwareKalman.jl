@@ -25,3 +25,21 @@ end
 function (policy::RandomGaussianPolicy)(; r::AbstractVector{<:AbstractFloat}, kwargs...)
     return randn(policy.rng, eltype(r), length(r))
 end
+
+struct MixedCGRandomGaussianPolicy{Trng<:Random.AbstractRNG}
+    rng::Trng
+end
+
+function (policy::MixedCGRandomGaussianPolicy)(;
+    i::Integer,
+    r::AbstractVector{<:AbstractFloat},
+    kwargs...,
+)
+    if i % 2 == 0
+        v = r
+    else
+        v = randn(policy.rng, eltype(r), length(r))
+    end
+
+    return v
+end
