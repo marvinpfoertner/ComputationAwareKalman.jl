@@ -1,3 +1,6 @@
+using JLD2
+using Printf
+
 abstract type AbstractFilterCache end
 
 function M⁻(fcache::AbstractFilterCache, k)
@@ -143,4 +146,150 @@ function Base.push!(
 
     push!(fcache.M⁺s, M⁺)
     push!(fcache.Π⁺s, Π⁺)
+end
+
+mutable struct JLD2FilterCache{
+    T<:AbstractFloat,
+    Tm⁻<:AbstractVector{T},
+    Tm<:AbstractVector{T},
+    TM<:AbstractMatrix{T},
+    Tu<:AbstractVector{T},
+    TU<:AbstractMatrix{T},
+    Tw<:AbstractVector{T},
+    TW<:AbstractMatrix{T},
+    TM⁺<:AbstractMatrix{T},
+    TΠ⁺<:AbstractMatrix{T},
+} <: AbstractFilterCache
+    path::String
+    length::Int
+end
+
+function JLD2FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}(
+    path::String,
+) where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
+    mkpath(path)
+
+    files = Base.filter(readdir(path)) do f_path
+        endswith(f_path, ".jld2")
+    end
+
+    return JLD2FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}(path, length(files))
+end
+
+function JLD2FilterCache{T}(path::String) where {T}
+    return JLD2FilterCache{
+        T,
+        Vector{T},  # Tm⁻
+        Vector{T},  # Tm
+        Matrix{T},  # TM
+        Vector{T},  # Tu
+        Matrix{T},  # TU
+        Vector{T},  # Tw
+        Matrix{T},  # TW
+        Matrix{T},  # TM⁺
+        Matrix{T},  # TΠ⁺
+    }(
+        path,
+    )
+end
+
+function JLD2FilterCache(path::String)
+    return JLD2FilterCache{Float64}(path)
+end
+
+function read_cache_entry(fcache::JLD2FilterCache, k, name)
+    fpath = joinpath(fcache.path, @sprintf("%010d.jld2", k))
+
+    return jldopen(fpath, "r") do file
+        file[name]
+    end
+end
+
+function m⁻(
+    fcache::JLD2FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺},
+    k,
+)::Tm⁻ where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
+    return read_cache_entry(fcache, k, "m⁻")
+end
+
+function m(
+    fcache::JLD2FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺},
+    k,
+)::Tm where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
+    return read_cache_entry(fcache, k, "m")
+end
+
+function M(
+    fcache::JLD2FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺},
+    k,
+)::TM where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
+    return read_cache_entry(fcache, k, "M")
+end
+
+function u(
+    fcache::JLD2FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺},
+    k,
+)::Tu where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
+    return read_cache_entry(fcache, k, "u")
+end
+
+function U(
+    fcache::JLD2FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺},
+    k,
+)::TU where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
+    return read_cache_entry(fcache, k, "U")
+end
+
+function w(
+    fcache::JLD2FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺},
+    k,
+)::Tw where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
+    return read_cache_entry(fcache, k, "w")
+end
+
+function W(
+    fcache::JLD2FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺},
+    k,
+)::TW where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
+    return read_cache_entry(fcache, k, "W")
+end
+
+function M⁺(
+    fcache::JLD2FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺},
+    k,
+)::TM⁺ where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
+    return read_cache_entry(fcache, k, "M⁺")
+end
+
+function Π⁺(
+    fcache::JLD2FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺},
+    k,
+)::TΠ⁺ where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
+    return read_cache_entry(fcache, k, "Π⁺")
+end
+
+function Base.push!(
+    fcache::JLD2FilterCache{T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺},
+    m⁻::Tm⁻,
+    x_cache::UpdateCache{T,Tm,TM,Tu,TU,Tw,TW},
+    M⁺::TM⁺,
+    Π⁺::TΠ⁺,
+) where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
+    fpath = joinpath(fcache.path, @sprintf("%010d.jld2", fcache.length + 1))
+
+    jldopen(fpath, "w") do file
+        file["m⁻"] = m⁻
+
+        file["m"] = x_cache.m
+        file["M"] = x_cache.M
+        file["u"] = x_cache.u
+        file["U"] = x_cache.U
+        file["w"] = x_cache.w
+        file["W"] = x_cache.W
+
+        file["M⁺"] = M⁺
+        file["Π⁺"] = Π⁺
+    end
+
+    fcache.length += 1
 end
