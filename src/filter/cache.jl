@@ -1,6 +1,3 @@
-using JLD2
-using Printf
-
 abstract type AbstractFilterCache end
 
 function M⁻(fcache::AbstractFilterCache, k)
@@ -90,6 +87,10 @@ end
 
 function FilterCache()
     return FilterCache{Float64}()
+end
+
+function Base.length(fcache::FilterCache)
+    return length(fcache.m⁻s)
 end
 
 function m⁻(fcache::FilterCache, k)
@@ -197,6 +198,10 @@ function JLD2FilterCache(path::String)
     return JLD2FilterCache{Float64}(path)
 end
 
+function Base.length(fcache::JLD2FilterCache)
+    return fcache.length
+end
+
 function read_cache_entry(fcache::JLD2FilterCache, k, name)
     fpath = joinpath(fcache.path, @sprintf("%010d.jld2", k))
 
@@ -275,7 +280,7 @@ function Base.push!(
     M⁺::TM⁺,
     Π⁺::TΠ⁺,
 ) where {T,Tm⁻,Tm,TM,Tu,TU,Tw,TW,TM⁺,TΠ⁺}
-    fpath = joinpath(fcache.path, @sprintf("%010d.jld2", fcache.length + 1))
+    fpath = joinpath(fcache.path, @sprintf("%010d.jld2", length(fcache) + 1))
 
     jldopen(fpath, "w") do file
         file["m⁻"] = m⁻
