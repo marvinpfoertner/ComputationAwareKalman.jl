@@ -1,124 +1,137 @@
-abstract type AbstractSmootherCache end
-
-function m⁻(scache::AbstractSmootherCache, k)
-    return m⁻(fcache(scache), k)
-end
-
-function M⁻(scache::AbstractSmootherCache, k)
-    return M⁻(fcache(scache), k)
-end
-
-function m(scache::AbstractSmootherCache, k)
-    return m(fcache(scache), k)
-end
-
-function M(scache::AbstractSmootherCache, k)
-    # Mˢₖ = Mˢ(scache, k)
-
-    # if k == length(scache)
-    #     Mₖ = Mˢₖ
-    # else
-    #     Wˢₖ₊₁ = Wˢ(scache, k + 1)
-    #     Mₖ = Mˢₖ[:, 1:(size(Mˢₖ, 2)-size(Wˢₖ₊₁, 2))]
-    # end
-
-    # return Mₖ
-
-    return M(fcache(scache), k)
-end
-
-function w(scache::AbstractSmootherCache, k)
-    return w(fcache(scache), k)
-end
-
-function W(scache::AbstractSmootherCache, k)
-    return W(fcache(scache), k)
-end
-
-function M⁺(scache::AbstractSmootherCache, k)
-    return M⁺(fcache(scache), k)
-end
-
-function P⁻W(scache::AbstractSmootherCache, k)
-    return P⁻W(fcache(scache), k)
-end
-
-function P(gmc::AbstractGaussMarkovChain, scache::AbstractSmootherCache, k)
-    return P(gmc, fcache(scache), k)
-end
-
-struct SmootherCache{
+abstract type AbstractSmootherCache{
     Tmˢ<:AbstractVector{<:AbstractFloat},
     TMˢ<:AbstractMatrix{<:AbstractFloat},
     Twˢ<:AbstractVector{<:AbstractFloat},
     TWˢ<:AbstractMatrix{<:AbstractFloat},
-    TΠˢ<:AbstractMatrix{<:AbstractFloat},
-    Tfcache<:AbstractFilterCache,
-} <: AbstractSmootherCache
+} end
+
+function M(cache::AbstractSmootherCache, k)
+    Mˢₖ = Mˢ(cache, k)
+
+    if k == length(cache)
+        Mₖ = Mˢₖ
+    else
+        Wˢₖ₊₁ = Wˢ(cache, k + 1)
+        Mₖ = Mˢₖ[:, 1:(size(Mˢₖ, 2)-size(Wˢₖ₊₁, 2))]
+    end
+
+    return Mₖ
+end
+
+function Pˢ(gmc::AbstractGaussMarkovChain, cache::AbstractSmootherCache, k)
+    return LowRankDowndatedMatrix(Σ(gmc, k), Mˢ(cache, k))
+end
+
+struct SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ} <: AbstractSmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ}
+    final_length::Int
+
     mˢs::Vector{Tmˢ}
     Mˢs::Vector{TMˢ}
 
     wˢs::Vector{Twˢ}
     Wˢs::Vector{TWˢ}
-
-    Πˢs::Vector{TΠˢ}
-
-    fcache::Tfcache
 end
 
-function SmootherCache(fcache)
-    mˢs = [m(fcache, length(fcache))]
-    Mˢs = [M(fcache, length(fcache))]
-
-    wˢs = [w(fcache, length(fcache))]
-    Wˢs = [W(fcache, length(fcache))]
-
-    Πˢs = Matrix{eltype(Wˢs[end])}[]
-
-    return SmootherCache(mˢs, Mˢs, wˢs, Wˢs, Πˢs, fcache)
+function SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ}(final_length::Int) where {Tmˢ,TMˢ,Twˢ,TWˢ}
+    return SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ}(final_length, Tmˢ[], TMˢ[], Twˢ[], TWˢ[])
 end
 
-function Base.length(scache::SmootherCache)
-    return length(scache.mˢs)
+function Base.length(cache::SmootherCache)
+    return length(cache.mˢs)
 end
 
-function mˢ(scache::SmootherCache, k)
-    return scache.mˢs[length(fcache(scache))-k+1]
+function mˢ(cache::SmootherCache, k)
+    return cache.mˢs[cache.final_length-k+1]
 end
 
-function Mˢ(scache::SmootherCache, k)
-    return scache.Mˢs[length(fcache(scache))-k+1]
+function Mˢ(cache::SmootherCache, k)
+    return cache.Mˢs[cache.final_length-k+1]
 end
 
-function wˢ(scache::SmootherCache, k)
-    return scache.wˢs[length(fcache(scache))-k+1]
+function wˢ(cache::SmootherCache, k)
+    return cache.wˢs[cache.final_length-k+1]
 end
 
-function Wˢ(scache::SmootherCache, k)
-    return scache.Wˢs[length(fcache(scache))-k+1]
-end
-
-function Πˢ(scache::SmootherCache, k)
-    return scache.Πˢs[length(fcache(scache))-k+1]
-end
-
-function fcache(scache::SmootherCache)
-    return scache.fcache
+function Wˢ(cache::SmootherCache, k)
+    return cache.Wˢs[cache.final_length-k+1]
 end
 
 function Base.pushfirst!(
-    scache::SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ,TΠˢ},
+    cache::SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ},
     mˢ::Tmˢ,
     Mˢ::TMˢ,
     wˢ::Twˢ,
     Wˢ::TWˢ,
-    Πˢ::TΠˢ,
-) where {Tmˢ,TMˢ,Twˢ,TWˢ,TΠˢ}
-    push!(scache.mˢs, mˢ)
-    push!(scache.Mˢs, Mˢ)
+) where {Tmˢ,TMˢ,Twˢ,TWˢ}
+    push!(cache.mˢs, mˢ)
+    push!(cache.Mˢs, Mˢ)
 
-    push!(scache.wˢs, wˢ)
-    push!(scache.Wˢs, Wˢ)
+    push!(cache.wˢs, wˢ)
+    push!(cache.Wˢs, Wˢ)
+end
 
-    push!(scache.Πˢs, Πˢ)
+mutable struct JLD2SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ} <: AbstractSmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ}
+    path::String
+
+    final_length::Int
+    current_length::Int
+end
+
+function JLD2SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ}(
+    path::String,
+    final_length::Int,
+) where {Tmˢ,TMˢ,Twˢ,TWˢ}
+    mkpath(path)
+
+    return JLD2SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ}(path, final_length, 0)
+end
+
+function Base.length(cache::JLD2SmootherCache)
+    return cache.current_length
+end
+
+function read_cache_entry(cache::JLD2SmootherCache, k, key)
+    fpath = joinpath(cache.path, @sprintf("smoother_%010d.jld2", k))
+
+    return jldopen(fpath, "r") do file
+        file[key]
+    end
+end
+
+function mˢ(cache::JLD2SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ}, k)::Tmˢ where {Tmˢ,TMˢ,Twˢ,TWˢ}
+    return read_cache_entry(cache, k, "mˢ")
+end
+
+function Mˢ(cache::JLD2SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ}, k)::TMˢ where {Tmˢ,TMˢ,Twˢ,TWˢ}
+    return read_cache_entry(cache, k, "Mˢ")
+end
+
+function wˢ(cache::JLD2SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ}, k)::Twˢ where {Tmˢ,TMˢ,Twˢ,TWˢ}
+    return read_cache_entry(cache, k, "wˢ")
+end
+
+function Wˢ(cache::JLD2SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ}, k)::TWˢ where {Tmˢ,TMˢ,Twˢ,TWˢ}
+    return read_cache_entry(cache, k, "Wˢ")
+end
+
+function Base.pushfirst!(
+    cache::JLD2SmootherCache{Tmˢ,TMˢ,Twˢ,TWˢ},
+    mˢ::Tmˢ,
+    Mˢ::TMˢ,
+    wˢ::Twˢ,
+    Wˢ::TWˢ,
+) where {Tmˢ,TMˢ,Twˢ,TWˢ}
+    fpath = joinpath(
+        cache.path,
+        @sprintf("smoother_%010d.jld2", cache.final_length - cache.current_length)
+    )
+
+    jldopen(fpath, "w") do file
+        file["mˢ"] = mˢ
+        file["Mˢ"] = Mˢ
+        file["wˢ"] = wˢ
+        file["Wˢ"] = Wˢ
+    end
+
+    cache.current_length += 1
 end

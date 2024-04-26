@@ -1,16 +1,11 @@
-function filter(
-    gmc::Tgmc,
-    mmod::Tmmod,
-    ys::Tys;
+function filter!(
+    gmc::AbstractGaussMarkovChain,
+    mmod::AbstractMeasurementModel,
+    ys::AbstractVector{<:AbstractVector},
+    cache::AbstractFilterCache;
     update_kwargs = (;),
     truncate_kwargs = (;),
-) where {
-    Tgmc<:AbstractGaussMarkovChain,
-    Tmmod<:AbstractMeasurementModel,
-    Tys<:AbstractVector{<:AbstractVector},
-}
-    fcache = FilterCache()
-
+)
     mₖ₋₁ = μ(gmc, 0)
     M⁺ₖ₋₁ = zeros(eltype(mₖ₋₁), size(mₖ₋₁, 1), 0)
 
@@ -26,11 +21,17 @@ function filter(
         # Truncate
         M⁺ₖ, Π⁺ₖ = truncate(xₖ.M; truncate_kwargs...)
 
-        push!(fcache, yₖ, xₖ, M⁺ₖ, Π⁺ₖ)
+        push!(cache; m⁻ = m⁻ₖ, xₖ..., M⁺ = M⁺ₖ, Π⁺ = Π⁺ₖ)
 
         mₖ₋₁ = xₖ.m
         M⁺ₖ₋₁ = M⁺ₖ
     end
+end
 
-    return fcache
+function filter(args...; kwargs...)
+    cache = FilterCache()
+
+    filter!(args..., cache; kwargs)
+
+    return cache
 end
