@@ -31,20 +31,24 @@ function interpolate(
 )
     k = searchsortedlast(ts(dgmp), t)
 
+    Σₜ = Σ(dgmp.gmp, t)
+
+    if t == ts(dgmp)[k]
+        mˢₜ = mˢ(scache, k)
+        Mˢₜ = Mˢ(scache, k)
+
+        return ConditionalGaussianBelief(mˢₜ, Σₜ, Mˢₜ)
+    end
+
     if k < 1
         mₜ = μ(dgmp.gmp, t)
         Mₜ = zeros(eltype(mₜ), size(m, 1), 0)
-    elseif t == ts(dgmp)[k]
-        mₜ = m(fcache, k)
-        Mₜ = M(fcache, k)
     else
         Aₜₖ = A(dgmp.gmp, t, ts(dgmp)[k])
 
         mₜ = Aₜₖ * m(fcache, k)
         Mₜ = Aₜₖ * M⁺(fcache, k)
     end
-
-    Σₜ = Σ(dgmp.gmp, t)
 
     if k >= length(dgmp)
         mˢₜ = mₜ
