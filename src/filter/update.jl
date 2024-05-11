@@ -9,6 +9,7 @@ function update(
     reltol::T = 1e-12,
     max_iter::Integer = size(H, 1),
     policy = CGPolicy(),
+    callback_fn = ((args...; kwargs...) -> nothing),
 ) where {
     T<:AbstractFloat,
     Tm⁻<:AbstractVector{T},
@@ -31,6 +32,17 @@ function update(
     r₀ = y - H * m⁻
     r = r₀
 
+    callback_fn(;
+        i = i,
+        u = u,
+        U = U,
+        r = r,
+        v = nothing,
+        α = nothing,
+        d = nothing,
+        η = nothing,
+    )
+
     tol = max(abstol, reltol * norm(y, 2))
 
     while i < max_iter && norm(r, 2) > tol
@@ -46,6 +58,8 @@ function update(
         i = i + 1
 
         r = r₀ - S(u)
+
+        callback_fn(; i = i, u = u, U = U, r = r, v = v, α = α, d = d, η = η)
     end
 
     w = H' * u
