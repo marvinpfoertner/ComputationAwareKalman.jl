@@ -7,6 +7,7 @@
 3. computation-aware, i.e. they come with theoretical guarantees for their uncertainty estimates which capture the inevitable approximation error.
 
 In our paper we have demonstrated the scalability of the approach by applying it to a state-space model with $\approx 230\mathrm{k}$ dimensions in the context of spatiotemporal GP regression of climate/weather data with about $4$ million data points.
+The code for the experiments from the paper can be found in [ComputationAwareKalmanExperiments.jl](https://github.com/marvinpfoertner/ComputationAwareKalmanExperiments.jl).
 
 ## Citation
 
