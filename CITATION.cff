@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: If you use this library, please cite it as below.
+title: ComputationAwareKalman.jl
+authors:
+- name: Marvin Pförtner
+license: MIT
+url: "https://github.com/marvinpfoertner/ComputationAwareKalman.jl"
+preferred-citation:
+  type: generic
+  title: "Computation-Aware Kalman Filtering and Smoothing"
+  authors:
+  - family-names: Pförtner
+    given-names: Marvin
+    orcid: "https://orcid.org/0000-0002-9005-2984"
+  - family-names: Wenger
+    given-names: Jonathan
+    orcid: "https://orcid.org/0000-0003-2261-1331"
+  - family-names: Cockayne
+    given-names: Jon
+    orcid: "https://orcid.org/0000-0002-3287-199X"
+  - family-names: Hennig
+    given-names: Philipp
+    orcid: "https://orcid.org/0000-0001-7293-6092"
+  year: 2024
+  url: "https://arxiv.org/abs/2405.08971"
+  identifiers:
+    - type: other
+      value: "arXiv:2405.08971"
+      description: The arXiv preprint of the paper

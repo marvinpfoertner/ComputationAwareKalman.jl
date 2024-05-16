@@ -19,7 +19,7 @@ If you use this library, please cite our paper
   title = {Computation-Aware {K}alman Filtering and Smoothing},
   year = {2024},
   publisher = {arXiv},
-  doi = {10.48550/arxiv.2405.xxxxx},
-  url = {https://arxiv.org/abs/2405.xxxxx}
+  doi = {10.48550/arxiv.2405.08971},
+  url = {https://arxiv.org/abs/2405.08971}
 }
 ```
