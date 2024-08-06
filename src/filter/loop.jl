@@ -31,7 +31,7 @@ end
 function filter(args...; kwargs...)
     cache = FilterCache()
 
-    filter!(args..., cache; kwargs)
+    filter!(args..., cache; kwargs...)
 
     return cache
 end
