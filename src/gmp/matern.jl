@@ -18,13 +18,13 @@ function MaternProcess(p::Integer, l::Real = 1, σ²::Real = 1)
     elseif p == 1
         Σ∞ = σ² * Diagonal([1, λ^2])
     else
-        L = [zeros(p); 1.0]
+        L = [zeros(p); 1.0;;]
         Q = [σ² * (2λ)^(2p + 1) / binomial(2p, p)]
 
         Σ∞ = Symmetric(lyap(F, L * Q * L'))
     end
 
-    return MaternProcess{Ttypeof(F),typeof(Σ∞)}(F, Σ∞)
+    return MaternProcess{typeof(F),typeof(Σ∞)}(F, Σ∞)
 end
 
 function μ(gmp::MaternProcess, ::Real)
