@@ -20,3 +20,12 @@ ComputationAwareKalmanCovarianceFunctionsExt = ["CovarianceFunctions"]
 
 [compat]
 julia = "1.10"
+CovarianceFunctions = "0.2"
+Distributions = "0.25"
+JLD2 = "0.5"
+Kronecker = "0.5"
+LinearAlgebra = "1"
+Printf = "1"
+Random = "1"
+Statistics = "1.10"
+

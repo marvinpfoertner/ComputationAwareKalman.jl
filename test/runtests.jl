@@ -5,11 +5,7 @@ using Aqua, JET
 include("gp_regression.jl")
 
 @testset "Aqua.jl" begin
-    Aqua.test_all(
-        ComputationAwareKalman;
-        ambiguities = (broken = true,),
-        deps_compat = (broken = true, check_weakdeps = (broken = true,)),
-    )
+    Aqua.test_all(ComputationAwareKalman; ambiguities = (broken = true,))
 end
 
 @testset "JET.jl" begin
