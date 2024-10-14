@@ -1,5 +1,7 @@
 [deps]
+AbstractGPs = "99985d1d-32ba-4be9-9821-2ec096f28918"
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 ComputationAwareKalman = "28881c16-bf71-4ba7-a6ec-419960c0da53"
 JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+KernelFunctions = "ec8451be-7e33-11e9-00cf-bbf324bd1392"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
