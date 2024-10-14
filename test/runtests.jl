@@ -1,6 +1,6 @@
 using Test
 using ComputationAwareKalman
-using Aqua
+using Aqua, JET
 
 @testset "Aqua.jl" begin
     Aqua.test_all(
@@ -8,4 +8,8 @@ using Aqua
         ambiguities = (broken = true,),
         deps_compat = (broken = true, check_weakdeps = (broken = true,)),
     )
+end
+
+@testset "JET.jl" begin
+    JET.test_package(ComputationAwareKalman, broken = true)
 end
