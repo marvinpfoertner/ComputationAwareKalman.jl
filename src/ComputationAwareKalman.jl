@@ -32,6 +32,8 @@ include("gmp/discretize.jl")
 include("gmp/interpolate.jl")
 include("gmp/sampling.jl")
 
+include("gmp/matern.jl")
+
 # Space-Time Separable Gauss-Markov Processes
 include("stsgmp/model.jl")
 include("stsgmp/discretize.jl")
