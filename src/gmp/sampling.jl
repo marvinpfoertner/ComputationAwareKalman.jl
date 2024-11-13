@@ -1,16 +1,12 @@
-function Base.rand(
-    rng::Trng,
-    dgmp::DiscretizedGaussMarkovProcess,
-    ts_sample::Tts,
-) where {Trng<:Random.AbstractRNG,Tts<:AbstractVector{<:AbstractFloat}}
+function Base.rand(rng::Random.AbstractRNG, gmp::AbstractGaussMarkovProcess, ts)
     samples_x = Vector{Float64}[]
 
-    tⱼ₋₁ = ts_sample[1]
-    sample_xⱼ₋₁ = rand(rng, dgmp.gmp, tⱼ₋₁)
+    tⱼ₋₁ = ts[1]
+    sample_xⱼ₋₁ = rand(rng, gmp, tⱼ₋₁)
 
-    for j = 1:size(ts_sample, 1)
-        tⱼ = ts_sample[j]
-        sample_xⱼ = rand(rng, dgmp.gmp, tⱼ, tⱼ₋₁, sample_xⱼ₋₁)
+    for j = 1:size(ts, 1)
+        tⱼ = ts[j]
+        sample_xⱼ = rand(rng, gmp, tⱼ, tⱼ₋₁, sample_xⱼ₋₁)
 
         push!(samples_x, sample_xⱼ)
 
@@ -19,6 +15,14 @@ function Base.rand(
     end
 
     return samples_x
+end
+
+function Base.rand(
+    rng::Random.AbstractRNG,
+    dgmp::DiscretizedGaussMarkovProcess,
+    ts::AbstractVector{<:AbstractFloat},
+)
+    return rand(rng, dgmp.gmp, ts)
 end
 
 function Base.rand(
