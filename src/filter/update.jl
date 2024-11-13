@@ -44,6 +44,7 @@ function update(
     )
 
     tol = max(abstol, reltol * norm(y, 2))
+    max_iter = min(max_iter, size(H, 1))
 
     while i < max_iter && norm(r, 2) > tol
         v = policy(i = i, u = u, U = U, r = r)
