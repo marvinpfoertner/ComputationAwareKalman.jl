@@ -12,7 +12,7 @@ include("model/dynamics.jl")
 include("model/measurement.jl")
 
 include("low_rank.jl")
-include("state_covariance.jl")
+include("conditional_gaussian.jl")
 include("truncate.jl")
 
 include("filter/predict.jl")
