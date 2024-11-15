@@ -16,6 +16,8 @@ function Base.length(dgmp::Tdgmp) where {Tdgmp<:DiscretizedGaussMarkovProcess}
     return length(dgmp.ts)
 end
 
+statedim(dgmp::DiscretizedGaussMarkovProcess) = statedim(dgmp.gmp)
+
 function μ(dgmp::Tdgmp, k::Tk) where {Tdgmp<:DiscretizedGaussMarkovProcess,Tk<:Integer}
     return μ(dgmp.gmp, dgmp.ts[max(k, 1)])
 end

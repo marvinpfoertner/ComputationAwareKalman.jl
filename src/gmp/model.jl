@@ -1,6 +1,13 @@
 abstract type AbstractGaussMarkovProcess end
 
 """
+    statedim(gmp::AbstractGaussMarkovProcess)
+
+State space dimension.
+"""
+statedim(::AbstractGaussMarkovProcess)
+
+"""
     μ(gmp::AbstractGaussMarkovProcess, t::Real)
 
 Mean of the state at time `t`.

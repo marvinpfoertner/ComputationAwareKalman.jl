@@ -4,3 +4,5 @@ struct SpaceTimeSeparableGaussMarkovProcess{Ttgmp<:AbstractGaussMarkovProcess,T�
     spatial_mean_fn::Tμₓ
     spatial_cov_fn::TΣₓ
 end
+
+statedim(stsgmp::SpaceTimeSeparableGaussMarkovProcess) = statedim(stsgmp.tgmp)

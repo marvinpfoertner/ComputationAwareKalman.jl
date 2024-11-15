@@ -7,6 +7,16 @@ Number of states in the Gauss-Markov chain.
 """
 Base.length(::AbstractGaussMarkovChain)
 
+# State space dimension
+function statedim end
+
+@doc raw"""
+    statedim(gmc::AbstractGaussMarkovChain)
+
+State space dimension.
+"""
+statedim(::AbstractGaussMarkovChain)
+
 # Mean
 function μ end
 

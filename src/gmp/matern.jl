@@ -27,6 +27,8 @@ function MaternProcess(p::Integer, l::Real = 1, σ²::Real = 1)
     return MaternProcess{typeof(F),typeof(Σ∞)}(F, Σ∞)
 end
 
+statedim(gmp::MaternProcess) = size(gmp.Σ∞, 2)
+
 function μ(gmp::MaternProcess, ::Real)
     D = size(gmp.F, 2)
 
