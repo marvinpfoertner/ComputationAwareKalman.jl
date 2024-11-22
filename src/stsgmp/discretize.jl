@@ -38,7 +38,8 @@ struct SpatiallyDiscretizedSTSGMP{
     lsqrt_spatial_cov_mat::Tlsqrt_Σₓₓ
 end
 
-statedim(sdstsgmp::SpatiallyDiscretizedSTSGMP) = statedim(sdstsgmp.stsgmp)
+statedim(sdstsgmp::SpatiallyDiscretizedSTSGMP) =
+    statedim(sdstsgmp.stsgmp) * length(sdstsgmp.spatial_mean)
 
 function μ(sdstsgmp::SpatiallyDiscretizedSTSGMP, t::AbstractFloat)
     return kron(μ(sdstsgmp.stsgmp.tgmp, t), sdstsgmp.spatial_mean)
