@@ -33,7 +33,7 @@ function interpolate(
 
     Σₜ = Σ(dgmp.gmp, t)
 
-    if t == ts(dgmp)[k]
+    if k >= 1 && t == ts(dgmp)[k]
         mˢₜ = mˢ(scache, k)
         Mˢₜ = Mˢ(scache, k)
 
@@ -42,7 +42,7 @@ function interpolate(
 
     if k < 1
         mₜ = μ(dgmp.gmp, t)
-        Mₜ = zeros(eltype(mₜ), size(m, 1), 0)
+        Mₜ = zeros(eltype(mₜ), size(mₜ, 1), 0)
     else
         Aₜₖ = A(dgmp.gmp, t, ts(dgmp)[k])
 
